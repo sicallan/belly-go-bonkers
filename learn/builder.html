@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Builder Path — Belly Go Bonkers Academy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { background: var(--builder-bg); }
+    .page-hero { background: linear-gradient(135deg, #0077cc 0%, #00bbdd 100%); color: #fff; }
+    .page-hero .hero-sub { color: rgba(255,255,255,0.95); }
+    .path-badge { background: #fff; color: var(--builder-dark); }
+    .page-hero .hero-ages { background: rgba(0,0,0,0.12); color: #fff; }
+    .progress-dots a { border-color: var(--builder-accent); }
+    .learn-box { background: #e8f4fd; border-color: #0099dd; }
+  </style>
+</head>
+<body class="builder">
+
+  <nav class="top-nav">
+    <a href="../index.html" class="nav-brand">🎮 Belly Go Bonkers</a>
+    <div class="nav-links">
+      <a href="index.html"    class="nav-link">🏠 Academy</a>
+      <a href="story.html"    class="nav-link">💛 Our Story</a>
+      <a href="explorer.html" class="nav-link">⭐ Explorer</a>
+      <a href="builder.html"  class="nav-link active">🔨 Builder</a>
+      <a href="creator.html"  class="nav-link">✨ Creator</a>
+      <a href="../index.html" class="nav-link">▶ Play</a>
+    </div>
+  </nav>
+
+  <div class="page-hero">
+    <span class="path-badge">Path 2</span>
+    <h1>🔨 Builder</h1>
+    <p class="hero-sub">You've got your hard hat on — time to build!</p>
+    <p class="hero-sub" style="font-size:15px; font-weight:700; opacity:0.9;">
+      Read an existing pattern, copy it, fill in your own values. Something new in the game every time!
+    </p>
+    <span class="hero-ages">Ages 8–9 &nbsp;·&nbsp; 5 tasks</span>
+    <div class="progress-dots" style="margin-top:18px;">
+      <a href="#task1" title="Task 1">1</a>
+      <a href="#task2" title="Task 2">2</a>
+      <a href="#task3" title="Task 3">3</a>
+      <a href="#task4" title="Task 4">4</a>
+      <a href="#task5" title="Task 5">5</a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="tip-box" style="margin: 24px 0 12px;">
+      <strong>🔨 Builder tip:</strong> Every task follows the same idea — find something
+      that already exists in the code, copy its shape (the pattern), and fill it in with
+      new values. You never need to invent from scratch; just adapt what's already there!
+    </div>
+
+    <!-- ── TASK 1 ── -->
+    <div class="task-card" id="task1">
+      <div class="task-header">
+        <div class="task-number">1</div>
+        <div>
+          <h2>🌮 Add a new collectible type</h2>
+        </div>
+      </div>
+      <p class="task-intro">
+        Belly can collect donuts, pizza, ice cream and more. Let's add a new treat!
+        You need to make two small changes — one to define the new treat, one to let the game spawn it.
+      </p>
+
+      <div class="step-label">Change 1 of 2 — open this file</div>
+      <span class="file-badge">js/entities.js</span>
+
+      <div class="step-label">Find the COLLECTIBLE_RADII object (the radius controls how big the treat appears)</div>
+      <div class="code-block">
+        <pre><span class="cmt">// Builder Task 1: add a new kind here!</span>
+<span class="kw">const</span> <span class="prop">COLLECTIBLE_RADII</span> = {
+  <span class="prop">donut</span>:       <span class="num">16</span>,
+  <span class="prop">pizza</span>:       <span class="num">16</span>,
+  <span class="prop">icecream</span>:    <span class="num">18</span>,
+  <span class="prop">lollipop</span>:    <span class="num">14</span>,
+  <span class="prop">hotdog</span>:      <span class="num">18</span>,
+  <span class="prop">cupcake</span>:     <span class="num">15</span>,
+  <span class="prop">candybar</span>:    <span class="num">16</span>,
+  <span class="prop">milkshake</span>:   <span class="num">16</span>,
+  <span class="hl">  <span class="prop">taco</span>:        <span class="num">17</span>,  <span class="cmt">← add your new treat here!</span></span>
+};</pre>
+      </div>
+
+      <div class="step-label">Change 2 of 2 — open this file</div>
+      <span class="file-badge">js/game.js</span>
+
+      <div class="step-label">Find the <code style="background:#eee;padding:1px 5px;border-radius:3px;">spawnCollectible</code> function and add your treat to the kinds array</div>
+      <div class="code-block">
+        <pre><span class="cmt">// Builder Task 1: add your new kind name here!</span>
+<span class="kw">const</span> <span class="prop">kinds</span> = [
+  <span class="str">'donut'</span>, <span class="str">'pizza'</span>, <span class="str">'icecream'</span>, <span class="str">'lollipop'</span>,
+  <span class="str">'hotdog'</span>, <span class="str">'cupcake'</span>, <span class="str">'candybar'</span>, <span class="str">'milkshake'</span>,
+  <span class="hl">  <span class="str">'taco'</span>,   <span class="cmt">← add this!</span></span>
+];</pre>
+      </div>
+
+      <div class="outcome-box">
+        <span class="icon">🎮</span>
+        <div>
+          Refresh and play — your new treat will appear as a coloured circle for now.
+          It'll look like all the other collectibles until someone draws a proper sprite for it!
+        </div>
+      </div>
+      <div class="learn-box">
+        <span class="icon">💡</span>
+        <div>
+          <strong>You just learned about: Arrays and objects</strong>
+          An <em>array</em> is a list of things: <code style="background:#c8eeff;padding:1px 5px;border-radius:3px;">['donut', 'pizza', ...]</code>.
+          An <em>object</em> stores named values: <code style="background:#c8eeff;padding:1px 5px;border-radius:3px;">{ donut: 16, pizza: 16 }</code>.
+          The game picks a random item from the array each time it spawns a collectible.
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TASK 2 ── -->
+    <div class="task-card" id="task2">
+      <div class="task-header">
+        <div class="task-number">2</div>
+        <div>
+          <h2>💥 Add a new Bonkers Mode difficulty tier</h2>
+        </div>
+      </div>
+      <p class="task-intro">
+        The game has Easy, Normal, Hard and Chaos modes. You're going to add a new "Mega" tier
+        that's even more extreme — and make it appear in the difficulty picker on the title screen.
+      </p>
+
+      <div class="step-label">Change 1 of 2 — open this file</div>
+      <span class="file-badge">js/game.js</span>
+
+      <div class="step-label">Find BONKERS_CONFIGS and add a new tier after 'chaos'. Copy the chaos block and rename it 'mega'</div>
+      <div class="code-block">
+        <pre>  <span class="prop">chaos</span>: {
+    <span class="prop">candyCaneRequired</span>: <span class="num">5</span>,
+    <span class="prop">flashDuration</span>:     <span class="num">2.5</span>,
+    <span class="prop">shakeDuration</span>:     <span class="num">3.0</span>,
+    <span class="prop">runDuration</span>:       <span class="num">7.0</span>,
+    <span class="prop">speedMultiplier</span>:   <span class="num">4.2</span>,
+  },
+<span class="hl">  <span class="prop">mega</span>: {               <span class="cmt">← add this new block!</span>
+    <span class="prop">candyCaneRequired</span>: <span class="num">6</span>,
+    <span class="prop">flashDuration</span>:     <span class="num">3.0</span>,
+    <span class="prop">shakeDuration</span>:     <span class="num">4.0</span>,
+    <span class="prop">runDuration</span>:       <span class="num">9.0</span>,
+    <span class="prop">speedMultiplier</span>:   <span class="num">5.0</span>,
+  },</span></pre>
+      </div>
+
+      <div class="step-label">Change 2 of 2 — open this file</div>
+      <span class="file-badge">index.html</span>
+
+      <div class="step-label">Find the difficulty <code style="background:#eee;padding:1px 5px;border-radius:3px;">&lt;select&gt;</code> and add a new option</div>
+      <div class="code-block">
+        <pre><span class="kw">&lt;select</span> <span class="prop">id</span>=<span class="str">"bonkers-mode-select"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;option</span> <span class="prop">value</span>=<span class="str">"easy"</span><span class="kw">&gt;</span>Easy<span class="kw">&lt;/option&gt;</span>
+  <span class="kw">&lt;option</span> <span class="prop">value</span>=<span class="str">"normal"</span><span class="kw">&gt;</span>Normal<span class="kw">&lt;/option&gt;</span>
+  <span class="kw">&lt;option</span> <span class="prop">value</span>=<span class="str">"hard"</span><span class="kw">&gt;</span>Hard<span class="kw">&lt;/option&gt;</span>
+  <span class="kw">&lt;option</span> <span class="prop">value</span>=<span class="str">"chaos"</span><span class="kw">&gt;</span>Chaos<span class="kw">&lt;/option&gt;</span>
+  <span class="hl">  <span class="kw">&lt;option</span> <span class="prop">value</span>=<span class="str">"mega"</span><span class="kw">&gt;</span>MEGA 💥<span class="kw">&lt;/option&gt;</span>  <span class="cmt">← add this!</span></span>
+<span class="kw">&lt;/select&gt;</span></pre>
+      </div>
+
+      <div class="outcome-box">
+        <span class="icon">🎮</span>
+        <div>Refresh the game — "MEGA 💥" now appears in the difficulty picker on the title screen!</div>
+      </div>
+      <div class="learn-box">
+        <span class="icon">💡</span>
+        <div>
+          <strong>You just learned about: Copy-and-modify</strong>
+          The safest way to add something new is to copy something that already works
+          and change only what needs to change. You touched two files but only added code —
+          nothing was broken because you followed the existing pattern exactly.
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TASK 3 ── -->
+    <div class="task-card" id="task3">
+      <div class="task-header">
+        <div class="task-number">3</div>
+        <div>
+          <h2>🎯 Make a hitbox more forgiving</h2>
+        </div>
+      </div>
+      <p class="task-intro">
+        A <strong>hitbox</strong> is the invisible rectangle the game uses to decide
+        if Belly touched an obstacle. Making it smaller means players get more room for error.
+        Let's make the bicycle easier to dodge!
+      </p>
+
+      <div class="step-label">Open this file</div>
+      <span class="file-badge">js/entities.js</span>
+
+      <div class="step-label">Find the OBSTACLE_HITBOX table at the top of the file and look for the bicycle entry</div>
+      <div class="code-block">
+        <pre><span class="cmt">// Hitbox insets: [leftFrac, topFrac, widthFrac, heightFrac]</span>
+<span class="cmt">// Smaller widthFrac and heightFrac = smaller hitbox = easier to dodge</span>
+<span class="kw">const</span> <span class="prop">OBSTACLE_HITBOX</span> = {
+  <span class="cmt">// ...</span>
+  <span class="prop">'bicycle'</span>: [<span class="hl"><span class="num">0.08</span>, <span class="num">0.20</span>, <span class="num">0.84</span>, <span class="num">0.72</span></span>],
+  <span class="cmt">// ...</span>
+};</pre>
+      </div>
+
+      <div class="step-label">Change the four numbers to shrink the hitbox</div>
+      <div class="code-block">
+        <pre><span class="cmt">// Original — covers most of the sprite</span>
+<span class="prop">'bicycle'</span>: [<span class="num">0.08</span>, <span class="num">0.20</span>, <span class="num">0.84</span>, <span class="num">0.72</span>],
+
+<span class="cmt">// Smaller hitbox — more forgiving!</span>
+<span class="hl"><span class="prop">'bicycle'</span>: [<span class="num">0.22</span>, <span class="num">0.30</span>, <span class="num">0.56</span>, <span class="num">0.50</span>],</span></pre>
+      </div>
+
+      <div class="tip-box">
+        <strong>How the four numbers work:</strong>
+        <code style="background:#eee;padding:1px 5px;border-radius:3px;">[leftFrac, topFrac, widthFrac, heightFrac]</code>
+        <br>Each is a fraction of the sprite's total size. Bigger left/top fractions push the hitbox
+        inward. Smaller width/height fractions make it narrower and shorter.
+      </div>
+      <div class="outcome-box">
+        <span class="icon">🎮</span>
+        <div>Refresh and play. Try running right through a bicycle — you should be able to clip the edge without dying!</div>
+      </div>
+      <div class="learn-box">
+        <span class="icon">💡</span>
+        <div>
+          <strong>You just learned about: Hitboxes and fractions</strong>
+          In almost every game, the invisible collision rectangle is smaller than the
+          visible sprite — this gives players a fair feeling. Fractions (0.0–1.0)
+          keep the hitbox proportional no matter how big or small the sprite is.
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TASK 4 ── -->
+    <div class="task-card" id="task4">
+      <div class="task-header">
+        <div class="task-number">4</div>
+        <div>
+          <h2>✨ Add a new accessory for Belly</h2>
+        </div>
+      </div>
+      <p class="task-intro">
+        Belly can earn accessories by completing perfect runs (no lives lost).
+        Add a brand new accessory to the collection — it will appear in the shop
+        and can be unlocked just like the others!
+      </p>
+
+      <div class="step-label">Open this file</div>
+      <span class="file-badge">js/game.js</span>
+
+      <div class="step-label">Find the ACCESSORIES array</div>
+      <div class="code-block">
+        <pre><span class="cmt">// Builder Task 4: add a new object to this array!</span>
+<span class="kw">const</span> <span class="prop">ACCESSORIES</span> = [
+  { <span class="prop">id</span>: <span class="str">'hat'</span>,        <span class="prop">emoji</span>: <span class="str">'🎩'</span>, <span class="prop">name</span>: <span class="str">'Magic Hat'</span>,      <span class="prop">desc</span>: <span class="str">'Tips with style!'</span> },
+  { <span class="prop">id</span>: <span class="str">'boots'</span>,      <span class="prop">emoji</span>: <span class="str">'👢'</span>, <span class="prop">name</span>: <span class="str">'Power Boots'</span>,    <span class="prop">desc</span>: <span class="str">'Spring in every step!'</span> },
+  { <span class="prop">id</span>: <span class="str">'glasses'</span>,    <span class="prop">emoji</span>: <span class="str">'🕶️'</span>, <span class="prop">name</span>: <span class="str">'Cool Shades'</span>,    <span class="prop">desc</span>: <span class="str">'Looking so groovy!'</span> },
+  <span class="cmt">// ... more accessories</span>
+  <span class="hl">  { <span class="prop">id</span>: <span class="str">'umbrella'</span>,   <span class="prop">emoji</span>: <span class="str">'☂️'</span>, <span class="prop">name</span>: <span class="str">'Lucky Umbrella'</span>, <span class="prop">desc</span>: <span class="str">'Stays dry, plays hard!'</span> },  <span class="cmt">← add yours!</span></span>
+];</pre>
+      </div>
+
+      <div class="tip-box">
+        <strong>Make it your own!</strong> Choose any emoji, give it a fun name and a silly description.
+        Use the same shape as the other items:
+        <code style="background:#eee;padding:1px 5px;border-radius:3px;">{ id: '...', emoji: '...', name: '...', desc: '...' }</code>
+      </div>
+      <div class="outcome-box">
+        <span class="icon">🎮</span>
+        <div>Refresh and complete a level without losing a life — your new accessory will appear in the reward screen!</div>
+      </div>
+      <div class="learn-box">
+        <span class="icon">💡</span>
+        <div>
+          <strong>You just learned about: Arrays of objects</strong>
+          An array of objects is one of the most common patterns in all of programming —
+          a list where each item has several named properties. Adding a new item only
+          requires matching the <em>shape</em> of the existing items exactly.
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TASK 5 ── -->
+    <div class="task-card" id="task5">
+      <div class="task-header">
+        <div class="task-number">5</div>
+        <div>
+          <h2>🦖 Move an obstacle to a different level</h2>
+        </div>
+      </div>
+      <p class="task-intro">
+        Each level has its own list of obstacles. The dinosaur normally only appears in level 1,
+        but you can move it — or add it — to any other level. You can also make an obstacle
+        appear more often by adding its name to the list more than once!
+      </p>
+
+      <div class="step-label">Open this file</div>
+      <span class="file-badge">js/game.js</span>
+
+      <div class="step-label">Find the spawnObstacle function and look for the kindsByLevel object</div>
+      <div class="code-block">
+        <pre><span class="cmt">// Builder Task 5: move names between levels, or add duplicates!</span>
+<span class="kw">const</span> <span class="prop">kindsByLevel</span> = {
+  <span class="prop">1</span>: [<span class="str">'toy-small'</span>, <span class="str">'toy-large'</span>, <span class="str">'toy-ball'</span>, <span class="str">'rattle'</span>,
+     <span class="str">'bicycle'</span>, <span class="str">'blocks'</span>, <span class="str">'toy-car'</span>, <span class="hl"><span class="str">'dinosaur'</span></span>],  <span class="cmt">← try moving this!</span>
+  <span class="prop">2</span>: [<span class="str">'ant'</span>, <span class="str">'worm'</span>, <span class="str">'roman-pot'</span>, <span class="str">'boulder'</span>, <span class="str">'clock'</span>],
+  <span class="prop">3</span>: [<span class="str">'bird'</span>, <span class="str">'balloon'</span>, <span class="str">'plane'</span>, <span class="str">'hot-air-balloon'</span>, <span class="str">'blimp'</span>],
+  <span class="cmt">// ...</span>
+};</pre>
+      </div>
+
+      <div class="step-label">Try these experiments</div>
+      <div class="code-block">
+        <pre><span class="cmt">// Add dinosaur to level 2 as well:</span>
+<span class="prop">2</span>: [<span class="str">'ant'</span>, <span class="str">'worm'</span>, <span class="str">'roman-pot'</span>, <span class="str">'boulder'</span>, <span class="str">'clock'</span>, <span class="hl"><span class="str">'dinosaur'</span></span>],
+
+<span class="cmt">// Make ants appear twice as often in level 2:</span>
+<span class="prop">2</span>: [<span class="str">'ant'</span>, <span class="hl"><span class="str">'ant'</span></span>, <span class="str">'worm'</span>, <span class="str">'roman-pot'</span>, <span class="str">'boulder'</span>, <span class="str">'clock'</span>],
+
+<span class="cmt">// Add a sky obstacle to the underground level (chaos mode!):</span>
+<span class="prop">2</span>: [<span class="str">'ant'</span>, <span class="str">'worm'</span>, <span class="str">'boulder'</span>, <span class="str">'clock'</span>, <span class="hl"><span class="str">'bird'</span></span>],</pre>
+      </div>
+
+      <div class="outcome-box">
+        <span class="icon">🎮</span>
+        <div>Play through to the level you edited — your changed obstacles will appear!</div>
+      </div>
+      <div class="learn-box">
+        <span class="icon">💡</span>
+        <div>
+          <strong>You just learned about: Random selection from arrays</strong>
+          The game picks a random item from the list each time it spawns an obstacle.
+          A longer list gives more variety. Duplicating a name (adding it twice) makes
+          it twice as likely to be chosen — a simple but powerful technique!
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom nav -->
+    <div class="path-nav">
+      <a href="explorer.html">← Explorer Path</a>
+      <a href="../index.html" class="play-btn">▶ Play the Game!</a>
+      <a href="creator.html">✨ Creator Path →</a>
+    </div>
+
+  </div><!-- /content -->
+</body>
+</html>

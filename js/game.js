@@ -1,39 +1,105 @@
-(function(){
+// ============================================================
+// game.js — main game loop, state machine, and spawning logic
+// ============================================================
+// This is the heart of the game. It:
+//   1. Manages game states: 'title', 'playing', 'gameover', 'levelcomplete'
+//   2. Runs the game loop (requestAnimationFrame → update → render)
+//   3. Spawns obstacles, collectibles, planks, and candy canes
+//   4. Handles collisions and scoring
+//   5. Manages the Bonkers Mode phases (flash → shake → run)
+//   6. Shows HTML overlays for game-over and level-complete screens
+//
+// Creator Task 1: find requestAnimationFrame below and follow the chain
+// to understand how every frame of the game works!
+// ============================================================
+
+// ---- Core gameplay constants ----------------------------------------
+// Explorer Task 4: change INITIAL_SPEED to make the game faster or slower!
+const CONFIG = {
+  INITIAL_SPEED:              160,  // world scroll speed at game start (px/second)
+  SPEED_RAMP:                 2,    // px/s increase per second (progressive difficulty)
+  GROUND_OFFSET:              80,   // pixels from canvas bottom to ground surface
+  MAX_BOOST_DURATION:         1,    // seconds the jump key can extend a jump
+  OBSTACLE_SPAWN_MIN_GAP:     200,  // minimum px between obstacle spawns (world-space)
+  OBSTACLE_SPAWN_RANGE:       150,  // random extra px added to obstacle gap
+  COLLECTIBLE_SPAWN_MIN_GAP:  150,  // minimum px between collectible spawns
+  COLLECTIBLE_SPAWN_RANGE:    150,  // random extra px added to collectible gap
+  PLANK_SPAWN_FRACTION:       0.7,  // first plank spawns at canvas.width * this fraction
+  PLANK_SPAWN_MIN_SCREENS:    1.5,  // minimum screens between plank spawns
+  PLANK_SPAWN_SCREEN_RANGE:   0.5,  // random extra screens added to plank gap
+  SCORE_PER_PIXEL:            0.1,  // score points per pixel of distance travelled
+  CANDY_SCORE:                150,  // score awarded for collecting a candy cane
+  COLLECT_SCORE:              50,   // score awarded for collecting any other treat
+};
+
+const Game = (function () {
+
   const canvas = document.getElementById('game-canvas');
-  const ctx = canvas.getContext('2d');
-  let state = 'title';
-  let belly = null;
-  let scroll = 0;
-  let speed = 160; // px per second
-  let last = performance.now();
-  let obstacles = [];
+  const ctx    = canvas.getContext('2d');
+
+  // ---- Game state -------------------------------------------------------
+  // Current game state: 'title' | 'playing' | 'gameover' | 'levelcomplete'
+  let state      = 'title';
+  let belly      = null;     // the player character (Belly class instance)
+  let scroll     = 0;        // total world distance scrolled (pixels)
+  let speed      = CONFIG.INITIAL_SPEED; // current world scroll speed
+  let last       = performance.now();    // timestamp of previous frame (ms)
+
+  // Active game objects
+  let obstacles    = [];
   let collectibles = [];
-  let planks = [];
-  let nextPlankScroll = 0;
-  let nextObstacleScroll = 0;
+  let planks       = [];
+
+  // Scroll positions at which the next entity should be spawned
+  let nextPlankScroll       = 0;
+  let nextObstacleScroll    = 0;
   let nextCollectibleScroll = 0;
-  let score = 0;
-  let candyCaneCount = 0;
-  let bonkersPhase = null; // null | 'flash' | 'shake' | 'run'
+  let nextCandyCaneScroll   = 0;
+
+  // Scoring and level tracking
+  let score              = 0;
+  let candyCaneCount     = 0;   // candy canes collected toward Bonkers Mode
+  let currentLevel       = 1;
+  let lostLifeThisLevel  = false; // used to decide perfect-run accessory reward
+  let levelCompleteTimer = 0;
+
+  // Bonkers Mode state — phases: null | 'flash' | 'shake' | 'run'
+  let bonkersPhase = null;
   let bonkersTimer = 0;
-  let savedSpeed = 0;
-  let nextCandyCaneScroll = 0;
-  let shakeX = 0, shakeY = 0;
-  let invincible = false;
+  let savedSpeed   = 0;    // speed before Bonkers Mode started
+  let shakeX       = 0;   // random position used during shake phase
+  let shakeY       = 0;
+
+  // Invincibility (triggered by Bonkers Mode or the cheat menu)
+  let invincible      = false;
   let invincibleTimer = 0;
   let cheatInvincible = false;
-  let levelCompleteTimer = 0;
-  let lostLifeThisLevel = false;
-  let currentLevel = 1;
+
+  // Accessories equipped for this run (persisted in localStorage)
   let equippedAccessories = JSON.parse(localStorage.getItem('belly_accessories') || '[]');
 
-  function loadRecent(){
+  // Loads the saved high-score list from localStorage (up to 6 entries).
+  function loadRecent() {
     const raw = localStorage.getItem('belly_recent') || '[]';
-    try{ return JSON.parse(raw); }catch(e){ return [] }
+    try { return JSON.parse(raw); } catch (e) { return []; }
   }
-  function saveRecent(name,score){ const arr = loadRecent(); arr.push({name,score}); arr.sort((a,b)=>b.score-a.score); while(arr.length>6) arr.pop(); localStorage.setItem('belly_recent',JSON.stringify(arr)); }
 
-  function showRecent(){
+  /**
+   * Adds a new name+score entry to the recent-scores list, keeps the top 6.
+   * @param {string} name  - Player's display name.
+   * @param {number} score - Final score to record.
+   * @returns {void}
+   */
+  function saveRecent(name, score) {
+    const arr = loadRecent();
+    arr.push({ name, score });
+    arr.sort((a, b) => b.score - a.score);
+    while (arr.length > 6) arr.pop();
+    localStorage.setItem('belly_recent', JSON.stringify(arr));
+  }
+
+  // Renders the high-score list into the title-screen HTML elements.
+  function showRecent() {
     const list   = document.getElementById('scores-list');
     const empty  = document.getElementById('scores-empty');
     const recent = loadRecent();
@@ -55,14 +121,16 @@
     }
   }
 
-  // Max duration (seconds) the jump key can boost Belly upward
-  const MAX_BOOST_DURATION = 1;
-
-  // BONKERS MODE SETTINGS
-  // Title screen difficulty picker writes to localStorage and controls this mode.
+  // ---- Bonkers Mode configuration --------------------------------------
+  // Explorer Task 3: find 'candyCaneRequired' below and change the number!
+  // Builder Task 2: copy one of the blocks below to add a new difficulty tier!
+  // localStorage key that stores the player's chosen difficulty.
   const BONKERS_MODE_STORAGE_KEY = 'belly_bonkers_mode';
   let bonkersMode = localStorage.getItem(BONKERS_MODE_STORAGE_KEY) || 'normal';
-  const BONKERS_CONFIGS = {
+  // Difficulty settings for each Bonkers Mode tier.
+  // Each entry controls how many candy canes are needed, how long each
+  // phase lasts, and how fast the world moves during the run phase.
+  const BONKERS_CONFIGS = { // difficulty settings for each bonkers mode
     easy: {
       candyCaneRequired: 2,
       candyCaneSpawnMin: 550,
@@ -105,22 +173,30 @@
     },
   };
 
-  function isValidBonkersMode(mode){
+  // Returns true if the given mode string is one of the known difficulty tiers.
+  function isValidBonkersMode(mode) {
     return Object.prototype.hasOwnProperty.call(BONKERS_CONFIGS, mode);
   }
 
-  function setBonkersMode(mode){
+  /**
+   * Changes the active Bonkers Mode difficulty and persists it.
+   * @param {string} mode - One of 'easy', 'normal', 'hard', 'chaos'.
+   * @returns {void}
+   */
+  function setBonkersMode(mode) {
     if(!isValidBonkersMode(mode)) return;
     bonkersMode = mode;
     localStorage.setItem(BONKERS_MODE_STORAGE_KEY, mode);
   }
 
-  function getBonkersConfig(){
+  // Returns the config object for the currently selected difficulty mode.
+  function getBonkersConfig() {
     if(!isValidBonkersMode(bonkersMode)) bonkersMode = 'normal';
     return BONKERS_CONFIGS[bonkersMode] || BONKERS_CONFIGS.normal;
   }
 
-  function initBonkersModePicker(){
+  // Wires up the difficulty <select> on the title screen to setBonkersMode().
+  function initBonkersModePicker() {
     const select = document.getElementById('bonkers-mode-select');
     if(!select) return;
     if(!isValidBonkersMode(bonkersMode)) bonkersMode = 'normal';
@@ -130,6 +206,8 @@
     });
   }
 
+  // List of cosmetic accessories Belly can unlock through perfect runs.
+  // Builder Task 4: add a new object to this array to create a new accessory!
   const ACCESSORIES = [
     { id: 'hat',        emoji: '🎩', name: 'Magic Hat',      desc: 'Tips with style!' },
     { id: 'boots',      emoji: '👢', name: 'Power Boots',    desc: 'Spring in every step!' },
@@ -139,65 +217,105 @@
     { id: 'necklace',   emoji: '📿', name: 'Jewel Necklace', desc: 'Bling bling bling!' },
   ];
 
-  function startGame(level){
+  /**
+   * Resets all game state and starts a new run from the given level.
+   * @param {number} [level] - Level to start from (defaults to 1).
+   * @returns {void}
+   */
+  function startGame(level) {
     const bonkersCfg = getBonkersConfig();
-    currentLevel = level || 1;
-    state='playing';
+    currentLevel       = level || 1;
+    state              = 'playing';
     levelCompleteTimer = 0;
-    lostLifeThisLevel = false;
-    const lcBox = document.getElementById('levelcomplete-box'); if(lcBox) lcBox.remove();
-    belly = new exported.Belly(120, 400);
-    obstacles = []; collectibles = []; planks = []; score=0; scroll=0; speed=160;
-    // levels 3+ have no planks (open sky / space)
-    nextPlankScroll = currentLevel >= 3 ? Infinity : canvas.width * 0.7;
-    nextObstacleScroll = 200;
-    nextCollectibleScroll = 100;
-    candyCaneCount = 0; bonkersPhase = null; bonkersTimer = 0;
-    invincible = false; invincibleTimer = 0;
+    lostLifeThisLevel  = false;
+
+    // Remove any leftover HTML overlay from a previous run.
+    const lcBox = document.getElementById('levelcomplete-box');
+    if (lcBox) lcBox.remove();
+
+    // Create a fresh Belly and clear all active entities.
+    belly        = new exported.Belly(120, 400);
+    obstacles    = [];
+    collectibles = [];
+    planks       = [];
+    score        = 0;
+    scroll       = 0;
+    speed        = CONFIG.INITIAL_SPEED; // Explorer Task 4: CONFIG.INITIAL_SPEED is defined at the top!
+
+    // Levels 3+ are sky/space — no floating planks.
+    nextPlankScroll       = currentLevel >= 3 ? Infinity : canvas.width * CONFIG.PLANK_SPAWN_FRACTION;
+    nextObstacleScroll    = CONFIG.OBSTACLE_SPAWN_MIN_GAP;
+    nextCollectibleScroll = CONFIG.COLLECTIBLE_SPAWN_MIN_GAP / 2;
+
+    // Reset Bonkers Mode state.
+    candyCaneCount  = 0;
+    bonkersPhase    = null;
+    bonkersTimer    = 0;
+    invincible      = false;
+    invincibleTimer = 0;
     nextCandyCaneScroll = bonkersCfg.candyCaneSpawnMin + Math.random() * bonkersCfg.candyCaneSpawnRange;
-    // jetpack physics for level 4
-    belly.hasJetpack = currentLevel === 4;
-    // hide title, show exit button
+
+    // Level 4 uses jetpack physics instead of normal jump.
+    belly.hasJetpack = (currentLevel === 4);
+
     setTitleVisible(false);
-    Assets.stopMusic(); // reset tempo if bonkers was active, clears any running music
-    if(currentLevel === 6) Assets.startPortalMusic();
-    else if(currentLevel === 5) Assets.startHandbagMusic();
-    else if(currentLevel === 4) Assets.startSpaceMusic();
-    else if(currentLevel === 3) Assets.startSkyMusic();
-    else Assets.startMusic();
-    // place belly at correct position for current canvas size
-    const groundTopY = canvas.height - 80;
-    if(currentLevel === 4){
-      belly.y = canvas.height / 2 - belly.height / 2;
-      belly.groundY = canvas.height + 1000; // no ground snap in space
+
+    // Start the correct music track for this level.
+    Assets.stopMusic(); // also resets tempo if Bonkers was active
+    if      (currentLevel === 6) Assets.startPortalMusic();
+    else if (currentLevel === 5) Assets.startHandbagMusic();
+    else if (currentLevel === 4) Assets.startSpaceMusic();
+    else if (currentLevel === 3) Assets.startSkyMusic();
+    else                         Assets.startMusic();
+
+    // Position Belly at the correct height for this level.
+    const groundTopY = canvas.height - CONFIG.GROUND_OFFSET;
+    if (currentLevel === 4) {
+      // Space level: Belly floats freely with no gravity snap.
+      belly.y      = canvas.height / 2 - belly.height / 2;
+      belly.groundY = canvas.height + 1000; // effectively disable ground snap
     } else {
-      belly.y = groundTopY - belly.height;
+      belly.y      = groundTopY - belly.height;
       belly.groundY = groundTopY - belly.height;
     }
   }
 
-  const ui = ()=>document.getElementById('ui');
-  const exitBtn = ()=>document.getElementById('exit-button');
+  // Shorthand accessors for key DOM elements.
+  const ui     = () => document.getElementById('ui');
+  const exitBtn = () => document.getElementById('exit-button');
 
-  function setTitleVisible(visible){
-    const el = ui(); if(!el) return;
+  /**
+   * Shows or hides the title-screen HTML overlay and the in-game exit button.
+   * @param {boolean} visible - true to show the title screen, false to hide it.
+   * @returns {void}
+   */
+  function setTitleVisible(visible) {
+    const el = ui();
+    if (!el) return;
     el.style.display = visible ? 'flex' : 'none';
-    const eb = exitBtn(); if(eb) eb.style.display = visible ? 'none' : 'block';
-    const lcBox = document.getElementById('levelcomplete-box'); if(lcBox) lcBox.remove();
-    if(visible){
+
+    const eb = exitBtn();
+    if (eb) eb.style.display = visible ? 'none' : 'block';
+
+    const lcBox = document.getElementById('levelcomplete-box');
+    if (lcBox) lcBox.remove();
+
+    if (visible) {
       Assets.stopMusic();
-      // reset accessories so each run starts fresh
+      // Reset accessories so each run starts fresh (they are re-earned each time).
       equippedAccessories = [];
       localStorage.removeItem('belly_accessories');
     }
   }
   
-  function resizeCanvas(){
-    // set canvas to window size (CSS handles display scaling)
-    canvas.width = window.innerWidth;
+  // Returns the Y coordinate of the top surface of the ground.
+  function groundTop() { return canvas.height - CONFIG.GROUND_OFFSET; }
+
+  // Resizes the canvas to fill the window and repositions all entities accordingly.
+  function resizeCanvas() {
+    canvas.width  = window.innerWidth;
     canvas.height = window.innerHeight;
-    // compute ground top y
-    const groundTop = canvas.height - 80;
+    const groundTop = canvas.height - CONFIG.GROUND_OFFSET;
     // if belly exists, reposition for current level
     if(belly){
       belly.x = 120;
@@ -209,14 +327,14 @@
         belly.groundY = groundTop - belly.height;
       }
     }
-    // reposition existing obstacles/collectibles vertically relative to new ground
-    for(let o of obstacles){ o.y = (groundTop - o.h); }
-    for(let c of collectibles){ c.y = (groundTop - 40); }
+    // Reposition existing obstacles/collectibles to the new ground height.
+    for (const o of obstacles)    { o.y = groundTop - o.h; }
+    for (const c of collectibles) { c.y = groundTop - 40;  }
   }
 
-  function groundTop(){ return canvas.height - 80; }
-
-  function spawnObstacle(){
+  // Spawns a randomly-chosen obstacle for the current level just off the right edge.
+  // Builder Task 5: add a new kind name to one of the kindsByLevel arrays below!
+  function spawnObstacle() {
     const x = canvas.width + scroll + 80 + Math.random()*200;
     const kindsByLevel = {
       1: ['toy-small','toy-large','toy-ball','rattle','bicycle','blocks','toy-car','dinosaur'],
@@ -262,7 +380,9 @@
     }
     obstacles.push(o);
   }
-  function spawnCollectible(){
+  // Spawns a randomly-chosen collectible treat just off the right edge.
+  // Builder Task 1: add your new kind name to the 'kinds' array below!
+  function spawnCollectible() {
     const x = canvas.width + scroll + 100 + Math.random()*300;
     const kinds = ['donut','pizza','icecream','lollipop','hotdog','cupcake','candybar','milkshake'];
     const kind = kinds[Math.floor(Math.random()*kinds.length)];
@@ -272,7 +392,8 @@
     collectibles.push(new exported.Collectible(x, cy, kind));
   }
 
-  function spawnPlank(){
+  // Spawns a floating plank platform with two collectibles on top.
+  function spawnPlank() {
     const w = 150 + Math.random() * 100;
     const x = canvas.width + scroll + 80;
     const y = groundTop() - 90 - Math.random() * 40;
@@ -286,21 +407,24 @@
     collectibles.push(new exported.Collectible(x + w * 0.7, y - 32, k2));
   }
 
-  function spawnCandyCane(){
+  // Spawns a special candy cane collectible that progresses Bonkers Mode.
+  function spawnCandyCane() {
     const x = canvas.width + scroll + 80;
     collectibles.push(new exported.Collectible(x, groundTop() - 68, 'candy-cane'));
   }
 
-  function startBonkers(){
+  // Kicks off the Bonkers Mode sequence starting with the flash phase.
+  function startBonkers() {
     bonkersPhase = 'flash';
     bonkersTimer = 0;
     Assets.startBonkersAudio();
   }
 
-  // game-over overlay: ask for name then show scores
+  // Player name entered on the game-over screen (used when saving the score).
   let gameOverName = '';
 
-  function showGameOver(){
+  // Shows the game-over HTML overlay with a name input and score save button.
+  function showGameOver() {
     state = 'gameover';
     // ask for name using a non-blocking overlay (HTML input)
     const existing = document.getElementById('gameover-box');
@@ -344,11 +468,13 @@
     });
   }
 
-  // ── SECRET LEVEL PICKER ─ type 'belly' on the title screen ────────────
-  let secretBuffer = '';
-  const SECRET_CODE = 'belly';
+  // ---- Secret level picker ------------------------------------------
+  // Type 'belly' on the title screen to open a hidden level-select menu.
+  let secretBuffer   = '';
+  const SECRET_CODE  = 'belly';
 
-  function showLevelPicker(){
+  // Shows the hidden level-picker overlay (unlocked by typing the secret code).
+  function showLevelPicker() {
     const existing = document.getElementById('level-picker-box');
     if(existing) existing.remove();
     const box = document.createElement('div');
@@ -399,7 +525,9 @@
     window.addEventListener('keydown', onEsc);
   }
 
-  function init(){
+  // Sets up all event listeners and starts the game loop.
+  // Called once when the page finishes loading.
+  function init() {
     Input.bind();
     Assets.loadAll(()=>{});
     initBonkersModePicker();
@@ -437,15 +565,34 @@
     requestAnimationFrame(loop);
   }
 
-  function loop(t){
-    requestAnimationFrame(loop);
-    const dt = Math.min(50, t-last)/1000; last=t;
-    if(state==='playing') update(dt);
-    if(state==='levelcomplete') levelCompleteTimer += dt;
+  /**
+   * The main game loop — called by requestAnimationFrame ~60 times per second.
+   * Creator Task 1: this is where the game loop chain starts!
+   * Sequence each frame: calculate dt → update → render.
+   * @param {number} t - Current timestamp in milliseconds (provided by the browser).
+   * @returns {void}
+   */
+  function loop(t) {
+    requestAnimationFrame(loop); // schedule the next frame immediately
+
+    // dt = time since last frame in seconds. Capped at 50ms to prevent
+    // huge jumps if the tab was hidden or the device paused.
+    const dt = Math.min(50, t - last) / 1000;
+    last = t;
+
+    if (state === 'playing')       update(dt);
+    if (state === 'levelcomplete') levelCompleteTimer += dt;
+
     render();
   }
 
-  function update(dt){
+  /**
+   * Advances the game world by one frame.
+   * Handles Bonkers phases, physics, spawning, movement, and collisions.
+   * @param {number} dt - Seconds since last frame.
+   * @returns {void}
+   */
+  function update(dt) {
     const bonkersCfg = getBonkersConfig();
     // cheat: keep invincible flag permanently on if enabled
     if(cheatInvincible) invincible = true;
@@ -476,10 +623,13 @@
       if(!cheatInvincible && invincible){ invincibleTimer += dt; if(invincibleTimer >= bonkersCfg.invincibleDuration) invincible = false; }
       if(bonkersTimer >= bonkersCfg.runDuration){ bonkersPhase = null; belly.bonkersScale = 1; speed = savedSpeed; if(!cheatInvincible) invincible = false; belly.bonkersJump = false; showLevelComplete(); return; }
     }
-    // move world
-    const move = speed * dt; scroll += move; score += Math.floor(move*0.1);
-    // increase difficulty slowly
-    speed += dt*2;
+    // Move the world forward and award distance-based score.
+    const move = speed * dt;
+    scroll += move;
+    score  += Math.floor(move * CONFIG.SCORE_PER_PIXEL);
+
+    // Gradually ramp up speed for progressive difficulty.
+    speed += dt * CONFIG.SPEED_RAMP;
     // update belly physics
     if(currentLevel === 4){
       // === LEVEL 4: JETPACK PHYSICS ===
@@ -514,28 +664,26 @@
       belly.update(dt, 0.6, planks);
       // apply jump boost while key held
       const jumpHeld = Input.isDown('ArrowUp') || Input.isDown('Space');
-      if(jumpHeld) belly.boost(dt, MAX_BOOST_DURATION);
-      else belly.stopBoost();
+      if (jumpHeld) belly.boost(dt, CONFIG.MAX_BOOST_DURATION);
+      else          belly.stopBoost();
     }
     // advance belly animation timer
     if(belly.animTime === undefined) belly.animTime = 0;
     belly.animTime += dt;
     // touch swipe jump
     if(Input.isDown('SwipeUp')){ belly.jump(); Assets.playJump(); }
-    // spawn obstacles at a guaranteed minimum gap (400–700px world-space)
-    if(scroll >= nextObstacleScroll){
+    // Spawn obstacles, collectibles, planks and candy canes at regular intervals.
+    if (scroll >= nextObstacleScroll) {
       spawnObstacle();
-      nextObstacleScroll = scroll + 200 + Math.random() * 150;
+      nextObstacleScroll = scroll + CONFIG.OBSTACLE_SPAWN_MIN_GAP + Math.random() * CONFIG.OBSTACLE_SPAWN_RANGE;
     }
-    // spawn collectibles between obstacles (250–450px gap)
-    if(scroll >= nextCollectibleScroll){
+    if (scroll >= nextCollectibleScroll) {
       spawnCollectible();
-      nextCollectibleScroll = scroll + 150 + Math.random() * 150;
+      nextCollectibleScroll = scroll + CONFIG.COLLECTIBLE_SPAWN_MIN_GAP + Math.random() * CONFIG.COLLECTIBLE_SPAWN_RANGE;
     }
-    // plank spawning every ~1.5–2 screens, guaranteed
-    if(scroll >= nextPlankScroll){
+    if (scroll >= nextPlankScroll) {
       spawnPlank();
-      nextPlankScroll = scroll + canvas.width * (1.5 + Math.random() * 0.5);
+      nextPlankScroll = scroll + canvas.width * (CONFIG.PLANK_SPAWN_MIN_SCREENS + Math.random() * CONFIG.PLANK_SPAWN_SCREEN_RANGE);
     }
     // candy cane spawn (rare — every 700–1100px)
     if(scroll >= nextCandyCaneScroll){
@@ -582,12 +730,16 @@
         const cKind = collectibles[i].kind;
         collectibles.splice(i,1);
         Assets.playCollect();
-        if(cKind === 'candy-cane'){
-          score += 150;
+        if (cKind === 'candy-cane') {
+          score += CONFIG.CANDY_SCORE;
           candyCaneCount++;
-          if(candyCaneCount >= bonkersCfg.candyCaneRequired){ candyCaneCount = 0; startBonkers(); }
+          if (candyCaneCount >= bonkersCfg.candyCaneRequired) {
+            candyCaneCount = 0;
+            startBonkers();
+          }
         } else {
-          score += 50; belly.collect++;
+          score += CONFIG.COLLECT_SCORE;
+          belly.collect++;
         }
       }
     }
@@ -596,29 +748,57 @@
     collectibles = collectibles.filter(c=>c.x+c.r > -100);
   }
 
-  function render(){ Renderer.clear(); Renderer.drawBackground(scroll, currentLevel);
+  /**
+   * Draws the current frame — called every loop() tick regardless of state.
+   * Creator Task 1: this is the 'draw' step at the end of the game loop chain.
+   * @returns {void}
+   */
+  function render() {
     const bonkersCfg = getBonkersConfig();
-    for(let p of planks) Renderer.drawPlank(p);
-    if(state==='title'){
-      // dim canvas behind HTML title overlay
-      Renderer.ctx.fillStyle='rgba(255,255,255,0.6)'; Renderer.ctx.fillRect(0,0,canvas.width,canvas.height);
+    const inBonkers  = bonkersPhase === 'run';
+
+    Renderer.clear();
+    Renderer.drawBackground(scroll, currentLevel);
+
+    // Draw floating platforms before Belly so she appears on top.
+    for (const p of planks) Renderer.drawPlank(p);
+
+    // On the title screen, dim the canvas so the HTML overlay reads clearly.
+    if (state === 'title') {
+      Renderer.ctx.fillStyle = 'rgba(255,255,255,0.6)';
+      Renderer.ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
-    if(belly && bonkersPhase === 'shake'){
+
+    // Draw Belly — teleported to a random shake position during the shake phase.
+    if (belly && bonkersPhase === 'shake') {
       Renderer.drawBelly(belly, shakeX, shakeY, false, equippedAccessories);
-    } else if(belly){
+    } else if (belly) {
       Renderer.drawBelly(belly, undefined, undefined, invincible, equippedAccessories);
     }
-    const inBonkers = bonkersPhase === 'run';
-    for(let o of obstacles) Renderer.drawObstacle(o, inBonkers);
-    for(let c of collectibles) Renderer.drawCollectible(c, inBonkers);
-    if(belly) Renderer.drawHUD(score, belly.lives, candyCaneCount, bonkersCfg.candyCaneRequired, invincible, currentLevel, !lostLifeThisLevel);
-    if(bonkersPhase === 'flash') Renderer.drawBonkersFlash(bonkersTimer);
-    else if(bonkersPhase === 'shake') Renderer.drawBonkersShake(bonkersTimer);
-    else if(bonkersPhase === 'run' && state === 'playing') Renderer.drawBonkersRunLines();
-    if(state === 'levelcomplete') Renderer.drawLevelComplete(levelCompleteTimer, currentLevel);
+
+    // Draw all active obstacles and collectibles.
+    for (const o of obstacles)    Renderer.drawObstacle(o, inBonkers);
+    for (const c of collectibles) Renderer.drawCollectible(c, inBonkers);
+
+    // Draw the HUD (score, lives, candy-cane bar).
+    if (belly) {
+      Renderer.drawHUD(
+        score, belly.lives, candyCaneCount,
+        bonkersCfg.candyCaneRequired, invincible,
+        currentLevel, !lostLifeThisLevel
+      );
+    }
+
+    // Draw Bonkers Mode visual effects on top of everything else.
+    if      (bonkersPhase === 'flash')                  Renderer.drawBonkersFlash(bonkersTimer);
+    else if (bonkersPhase === 'shake')                  Renderer.drawBonkersShake(bonkersTimer);
+    else if (bonkersPhase === 'run' && state === 'playing') Renderer.drawBonkersRunLines();
+
+    if (state === 'levelcomplete') Renderer.drawLevelComplete(levelCompleteTimer, currentLevel);
   }
 
-  function getAccessoryRewardState(){
+  // Returns the current state of the accessory reward system for overlay rendering.
+  function getAccessoryRewardState() {
     const available = ACCESSORIES.filter(a => !equippedAccessories.includes(a.id));
     const perfectRun = !lostLifeThisLevel;
     return {
@@ -628,13 +808,23 @@
     };
   }
 
-  function awardAccessory(id){
+  /**
+   * Adds an accessory to the equipped list and persists it in localStorage.
+   * @param {string} id - Accessory id to award (e.g. 'hat').
+   * @returns {void}
+   */
+  function awardAccessory(id) {
     if(!id || equippedAccessories.includes(id)) return;
     equippedAccessories.push(id);
     localStorage.setItem('belly_accessories', JSON.stringify(equippedAccessories));
   }
 
-  function buildAccessoryGridHtml(perfectRun){
+  /**
+   * Builds the HTML string for the accessory-selection grid.
+   * @param {boolean} perfectRun - Whether the run was perfect (no lives lost).
+   * @returns {string} HTML markup for the grid.
+   */
+  function buildAccessoryGridHtml(perfectRun) {
     let html = '<div class="accessory-grid">';
     ACCESSORIES.forEach(acc => {
       const eq = equippedAccessories.includes(acc.id);
@@ -650,7 +840,14 @@
     return html;
   }
 
-  function openTransitionRewardBox(cfg){
+  /**
+   * Shows the between-levels reward overlay for levels 1–4.
+   * @param {Object} cfg - Configuration for this transition:
+   *   title, subtitlePerfect, subtitleMissed, subtitleAllUnlocked,
+   *   extraHint, nextLabel, onNext (callback to start next level).
+   * @returns {void}
+   */
+  function openTransitionRewardBox(cfg) {
     const { available, perfectRun, canChoose } = getAccessoryRewardState();
     const existing = document.getElementById('levelcomplete-box');
     if(existing) existing.remove();
@@ -708,7 +905,8 @@
     });
   }
 
-  function openFinalLevelBox(){
+  // Shows the level-5 completion screen with portal-unlock mechanic.
+  function openFinalLevelBox() {
     const { available, perfectRun, canChoose } = getAccessoryRewardState();
     const existing = document.getElementById('levelcomplete-box');
     if(existing) existing.remove();
@@ -802,7 +1000,8 @@
     });
   }
 
-  function showLevelComplete(){
+  // Transitions the game to the 'levelcomplete' state and shows the correct overlay.
+  function showLevelComplete() {
     state = 'levelcomplete';
     levelCompleteTimer = 0;
     Assets.stopMusic();
@@ -902,5 +1101,7 @@
     }, 900);
   }
 
+  // Start the game once all page resources (images, fonts) have loaded.
   window.addEventListener('load', init);
-})();
+
+})(); // end of Game IIFE

@@ -1,18 +1,76 @@
-const Assets = (function(){
+// ============================================================
+// assets.js — image loading and all audio (SFX + music)
+// ============================================================
+// Images are loaded via loadAll() and stored in the images{}
+// map keyed by obstacle/collectible kind names.
+//
+// Sound effects are synthesised with the Web Audio API —
+// no external audio files are needed.
+//
+// The music engine generates a looping 8-bit chiptune from
+// note data defined as arrays of [note, duration] pairs.
+// Different levels have different music tracks.
+// ============================================================
+
+const Assets = (function () {
+
+  // Loaded image elements, keyed by asset name (e.g. 'donut', 'bicycle').
   const images = {};
+
+  // Tracks whether the player has muted audio (persisted in localStorage).
   let muted = localStorage.getItem('belly_muted') === '1';
+
+  // Web Audio API context — created lazily on first sound to avoid
+  // browser autoplay restrictions.
   let ctx = null;
 
-  function ensureAudio(){ if(ctx) return; try{ ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ ctx = null } }
+  // Creates the AudioContext on first use (browsers block audio until user interaction).
+  function ensureAudio() {
+    if (ctx) return;
+    try {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch (e) {
+      ctx = null;
+    }
+  }
 
-  function playTone(freq,duration=0.08, type='sine', gain=0.12){ if(muted) return; ensureAudio(); if(!ctx) return; const o = ctx.createOscillator(); const g = ctx.createGain(); o.type = type; o.frequency.value = freq; g.gain.value = gain; o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + duration); }
+  /**
+   * Plays a single synthesised tone.
+   * @param {number} freq     - Frequency in Hz.
+   * @param {number} duration - Length in seconds.
+   * @param {string} type     - OscillatorType ('sine', 'square', 'triangle', 'sawtooth').
+   * @param {number} gain     - Volume (0–1).
+   * @returns {void}
+   */
+  function playTone(freq, duration = 0.08, type = 'sine', gain = 0.12) {
+    if (muted) return;
+    ensureAudio();
+    if (!ctx) return;
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type            = type;
+    o.frequency.value = freq;
+    g.gain.value      = gain;
+    o.connect(g);
+    g.connect(ctx.destination);
+    o.start();
+    o.stop(ctx.currentTime + duration);
+  }
 
-  function playJump(){ playTone(820,0.06,'sine',0.08); }
-  function playCollect(){ playTone(1200,0.06,'triangle',0.12); }
-  function playHurt(){ playTone(220,0.12,'sawtooth',0.16); }
+  // Plays the jump sound effect.
+  function playJump()    { playTone(820,  0.06, 'sine',     0.08); }
 
-  function playBonkers(){
-    if(muted) return; ensureAudio(); if(!ctx) return;
+  // Plays the collect sound effect (bright ping).
+  function playCollect() { playTone(1200, 0.06, 'triangle', 0.12); }
+
+  // Plays the hurt sound effect (low buzz).
+  function playHurt()    { playTone(220,  0.12, 'sawtooth', 0.16); }
+
+  // Plays a 3-second escalating engine-rev sequence to kick off Bonkers Mode.
+  function playBonkers() {
+    if (muted) return;
+    ensureAudio();
+    if (!ctx) return;
     // 3-second escalating engine rev sequence
     const now = ctx.currentTime;
     function rev(startF, endF, startT, dur, gainVal, waveType){
@@ -37,8 +95,11 @@ const Assets = (function(){
     rev(500, 2400,  2.55, 0.45, 0.10, 'square');
   }
 
-  function playVictory(){
-    if(muted) return; ensureAudio(); if(!ctx) return;
+  // Plays an ascending arpeggio fanfare when Belly completes a level.
+  function playVictory() {
+    if (muted) return;
+    ensureAudio();
+    if (!ctx) return;
     const now = ctx.currentTime;
     // Ascending arpeggio fanfare: C E G high-C then held chord
     const seq = [[523,0,0.18],[659,0.14,0.18],[784,0.28,0.18],[1047,0.42,0.32]];
@@ -62,8 +123,11 @@ const Assets = (function(){
     });
   }
 
-  function playBonkersEnd(){
-    if(muted) return; ensureAudio(); if(!ctx) return;
+  // Plays an engine wind-down sound when Bonkers Mode ends.
+  function playBonkersEnd() {
+    if (muted) return;
+    ensureAudio();
+    if (!ctx) return;
     // engine wind-down: sweep high to low, fading out
     const now = ctx.currentTime;
     const o = ctx.createOscillator();
@@ -77,19 +141,32 @@ const Assets = (function(){
     o.start(now); o.stop(now + 0.95);
   }
 
+  // Shared gain node that all music passes through — lets us mute everything at once.
   let musicGain = null;
-  function getMusicGain(){
-    if(!musicGain){ musicGain = ctx.createGain(); musicGain.connect(ctx.destination); }
+
+  // Returns (and lazily creates) the shared music gain node.
+  function getMusicGain() {
+    if (!musicGain) {
+      musicGain = ctx.createGain();
+      musicGain.connect(ctx.destination);
+    }
     return musicGain;
   }
 
-  function setMuted(v){
+  /**
+   * Mutes or unmutes all audio and persists the setting.
+   * @param {boolean} v - true to mute, false to unmute.
+   * @returns {void}
+   */
+  function setMuted(v) {
     muted = !!v;
     localStorage.setItem('belly_muted', muted ? '1' : '0');
-    if(musicGain) musicGain.gain.value = muted ? 0 : 1;
+    if (musicGain) musicGain.gain.value = muted ? 0 : 1;
   }
 
   // ---- 8-bit chiptune music engine ----
+  // Note frequency table — maps note names to Hz values.
+  // '_' is a rest (silence). Used by all music schedulers below.
   const NF = {
     '_':0,
     C3:130.81, D3:146.83, E3:164.81, F3:174.61, G3:196.00, A3:220.00, B3:246.94,
@@ -127,7 +204,8 @@ const Assets = (function(){
   let musicTimer = null;
   let blobTimer  = null;
 
-  function schedNote(freq, t, dur, type, vol){
+  // Schedules a single note to play at time t via the Web Audio API.
+  function schedNote(freq, t, dur, type, vol) {
     if(!freq) return;
     const mg = getMusicGain();
     const osc = ctx.createOscillator();
@@ -143,7 +221,8 @@ const Assets = (function(){
     osc.start(t); osc.stop(t + dur);
   }
 
-  function schedHat(t){
+  // Schedules a short hi-hat noise burst at time t (white noise filtered to a click).
+  function schedHat(t) {
     const mg = getMusicGain();
     const buf = ctx.createBuffer(1, ctx.sampleRate * 0.025, ctx.sampleRate);
     const d   = buf.getChannelData(0);
@@ -157,7 +236,8 @@ const Assets = (function(){
     src.start(t); src.stop(t + 0.03);
   }
 
-  function startMusic(){
+  // Starts the main level-1 bouncy chiptune music loop (160 BPM).
+  function startMusic() {
     if(musicPlaying) return;
     musicPlaying = true;
     ensureAudio(); if(!ctx) return;
@@ -206,7 +286,8 @@ const Assets = (function(){
 
   let bonkersAudioActive = false;
 
-  function startBonkersAudio(){
+  // Silences normal music, plays the rev SFX, then restarts music at 320 BPM.
+  function startBonkersAudio() {
     stopMusic(); // silence normal music immediately
     bonkersAudioActive = true;
     playBonkers(); // 3-second rev
@@ -218,14 +299,16 @@ const Assets = (function(){
     }, 3000);
   }
 
-  function stopBonkersAudio(){
+  // Ends the Bonkers Mode audio and resumes normal-speed music.
+  function stopBonkersAudio() {
     bonkersAudioActive = false;
     stopMusic();
     sixteenth = (60 / 160) / 4; // back to 160 BPM
     startMusic();
   }
 
-  function stopMusic(){
+  // Stops all music immediately and resets state for the next startMusic call.
+  function stopMusic() {
     musicPlaying = false;
     bonkersAudioActive = false;
     sixteenth = (60 / 160) / 4; // always restore normal tempo on stop
@@ -233,34 +316,72 @@ const Assets = (function(){
     if(blobTimer) { clearTimeout(blobTimer);  blobTimer=null;  }
   }
 
-  // Create a simple programmatic sprite-sheet for Belly with `frames` frames.
-  function createBellySprite(color='#ff79b4', frames = 4, size = 96){
-    const fw = size, fh = size;
+  /**
+   * Generates a programmatic sprite-sheet for Belly when SVG assets are unavailable.
+   * Draws `frames` animation frames side-by-side onto a canvas and stores the result
+   * as images.bellySprite so the renderer can cycle through the frames.
+   * @param {string} color  - Fill colour for Belly's body.
+   * @param {number} frames - Number of animation frames to generate.
+   * @param {number} size   - Width and height of each frame in pixels.
+   * @returns {void}
+   */
+  function createBellySprite(color = '#ff79b4', frames = 4, size = 96) {
+    const fw    = size;
+    const fh    = size;
     const sheet = document.createElement('canvas');
-    sheet.width = fw * frames; sheet.height = fh;
-    const sctx = sheet.getContext('2d');
-    for(let f=0; f<frames; f++){
-      const cx = fw*f + fw/2, cy = fh/2;
-      // body
-      sctx.fillStyle = color; sctx.beginPath(); sctx.ellipse(cx,cy,fw*0.42,fh*0.42,0,0,Math.PI*2); sctx.fill();
-      // belly-button face background
-      sctx.fillStyle = '#fff'; sctx.beginPath(); sctx.arc(cx, cy+6, 14, 0, Math.PI*2); sctx.fill();
-      // eyes vary a bit per frame
+    sheet.width  = fw * frames;
+    sheet.height = fh;
+    const sctx  = sheet.getContext('2d');
+
+    for (let f = 0; f < frames; f++) {
+      const cx = fw * f + fw / 2;
+      const cy = fh / 2;
+
+      // Body — pink ellipse
+      sctx.fillStyle = color;
+      sctx.beginPath();
+      sctx.ellipse(cx, cy, fw * 0.42, fh * 0.42, 0, 0, Math.PI * 2);
+      sctx.fill();
+
+      // Belly-button face — white circle
+      sctx.fillStyle = '#fff';
+      sctx.beginPath();
+      sctx.arc(cx, cy + 6, 14, 0, Math.PI * 2);
+      sctx.fill();
+
+      // Eyes — wiggle position slightly per frame for a blink effect
+      const eyeOffset = (f % 2 === 0) ? -4 : -6;
       sctx.fillStyle = '#222';
-      const eyeOffset = (f%2===0)? -4 : -6;
-      sctx.beginPath(); sctx.arc(cx+eyeOffset, cy+4, 3, 0, Math.PI*2); sctx.arc(cx+6, cy+4, 3, 0, Math.PI*2); sctx.fill();
-      // mouth: small smile that wiggles
+      sctx.beginPath();
+      sctx.arc(cx + eyeOffset, cy + 4, 3, 0, Math.PI * 2);
+      sctx.arc(cx + 6,         cy + 4, 3, 0, Math.PI * 2);
+      sctx.fill();
+
+      // Mouth — small wiggling rectangle
       sctx.fillStyle = '#b33';
       sctx.save();
-      sctx.translate(cx, cy+10);
-      sctx.rotate((f-1.5)*0.06);
-      sctx.fillRect(-5,0,10,3);
+      sctx.translate(cx, cy + 10);
+      sctx.rotate((f - 1.5) * 0.06);
+      sctx.fillRect(-5, 0, 10, 3);
       sctx.restore();
     }
-    const img = new Image(); img.src = sheet.toDataURL(); images.bellySprite = img; images.bellySprite.frames = frames; images.bellySprite.frameW = fw; images.bellySprite.frameH = fh;
+
+    // Convert the canvas to an Image and tag it with frame metadata.
+    const img          = new Image();
+    img.src            = sheet.toDataURL();
+    img.frames         = frames;
+    img.frameW         = fw;
+    img.frameH         = fh;
+    images.bellySprite = img;
   }
 
-  function loadAll(callback){
+  /**
+   * Loads all game image assets asynchronously, then calls callback when done.
+   * Falls back to createBellySprite() if any image fails to load.
+   * @param {Function} callback - Called with no arguments once all assets are ready.
+   * @returns {void}
+   */
+  function loadAll(callback) {
     const list = [
       {key:'belly',     src:'assets/belly.svg'},
       {key:'toy-small', src:'assets/toy_small.svg'},
@@ -282,19 +403,44 @@ const Assets = (function(){
       {key:'candy-cane',src:'assets/candy_cane.svg'},
     ];
     let remaining = list.length;
-    list.forEach(item=>{
+
+    list.forEach(item => {
       const img = new Image();
-      img.onload = ()=>{ images[item.key] = img; if(--remaining === 0){
-        // set bellySprite for compatibility
-        if(!images.bellySprite && images.belly){ images.bellySprite = images.belly; images.bellySprite.frames = 1; images.bellySprite.frameW = images.belly.width; images.bellySprite.frameH = images.belly.height; }
-        callback && callback();
-      }};
-      img.onerror = ()=>{ if(--remaining === 0){ if(!images.bellySprite) createBellySprite(); if(!images.bellySprite.frames) images.bellySprite.frames = 1; callback && callback(); } };
+
+      img.onload = () => {
+        images[item.key] = img;
+        if (--remaining === 0) {
+          // Ensure bellySprite has frame metadata even when loaded from SVG.
+          if (!images.bellySprite && images.belly) {
+            images.bellySprite        = images.belly;
+            images.bellySprite.frames = 1;
+            images.bellySprite.frameW = images.belly.width;
+            images.bellySprite.frameH = images.belly.height;
+          }
+          if (callback) callback();
+        }
+      };
+
+      img.onerror = () => {
+        // Image failed — fall back to the programmatic sprite for Belly.
+        if (--remaining === 0) {
+          if (!images.bellySprite) createBellySprite();
+          if (!images.bellySprite.frames) images.bellySprite.frames = 1;
+          if (callback) callback();
+        }
+      };
+
       img.src = item.src;
     });
   }
 
-  // ---- Breezy sky music — upbeat, windy ----
+  // ============================================================
+  // Per-level music tracks
+  // Each track has its own note sequences and BPM.
+  // Call stopMusic() before switching tracks.
+  // ============================================================
+
+  // ---- Level 3: Breezy sky music — upbeat, windy (135 BPM) ----
   const SKY_MELODY = [
     ['G5',2],['E5',1],['D5',1], ['B4',2],['A4',2],
     ['G5',2],['E5',2],          ['D5',2],['_',2],
@@ -317,7 +463,8 @@ const Assets = (function(){
   ];
   const skySixteenth = (60 / 135) / 4; // 135 BPM — breezy
 
-  function startSkyMusic(){
+  // Starts the sky-level music loop with wind gust sound effects.
+  function startSkyMusic() {
     if(musicPlaying) return;
     musicPlaying = true;
     ensureAudio(); if(!ctx) return;
@@ -369,7 +516,7 @@ const Assets = (function(){
     blobTimer = setTimeout(windGust, 300 + Math.random() * 800);
   }
 
-  // ---- Interstellar space music — slow ambient arpeggio ----
+  // ---- Level 4: Interstellar space music — slow ambient arpeggio (72 BPM) ----
   const SPACE_ARPEGGIO = [
     ['A4',4],['_',2],['E4',3],['_',1], ['C5',4],['_',2],['G4',3],['_',1],
     ['D5',4],['_',2],['A4',3],['E4',1],['G4',6],['_',2],
@@ -387,7 +534,8 @@ const Assets = (function(){
   ];
   const spaceSixteenth = (60 / 72) / 4; // 72 BPM — slow, haunting
 
-  function startSpaceMusic(){
+  // Starts the space-level music loop with cosmic twinkle effects.
+  function startSpaceMusic() {
     if(musicPlaying) return;
     musicPlaying = true;
     ensureAudio(); if(!ctx) return;
@@ -429,7 +577,7 @@ const Assets = (function(){
     blobTimer = setTimeout(twinkle, 600 + Math.random() * 1400);
   }
 
-  // ---- Hectic handbag music — 185 BPM chaos ----
+  // ---- Level 5: Hectic handbag music — busy city soundscape (185 BPM) ----
   const BAG_MELODY = [
     ['C5',1],['E5',1],['G5',1],['A5',1], ['G5',2],['E5',1],['C5',1],
     ['D5',1],['F5',1],['A5',1],['G5',1], ['E5',2],['D5',2],
@@ -452,7 +600,8 @@ const Assets = (function(){
   ];
   const bagSixteenth = (60 / 185) / 4; // 185 BPM — hectic
 
-  function startHandbagMusic(){
+  // Starts the handbag-level music with car horns, train toots and chatter SFX.
+  function startHandbagMusic() {
     if(musicPlaying) return;
     musicPlaying = true;
     ensureAudio(); if(!ctx) return;
@@ -543,7 +692,7 @@ const Assets = (function(){
     setTimeout(chatter, 400 + Math.random() * 600);
   }
 
-  // ---- Strange portal / wormhole music — deep suspense chiptune, 75 BPM ----
+  // ---- Level 6: Portal / wormhole music — deep suspense chiptune (75 BPM) ----
   // Lead hook: F E F E F E F D — each note an eighth (dur 2) at 75 BPM = 400ms/note
   const PORTAL_MELODY = [
     // bars 1-2: signature hook ×2
@@ -590,7 +739,8 @@ const Assets = (function(){
   });
   const portalSixteenth = (60 / 75) / 4; // 75 BPM — slow, creeping
 
-  function startPortalMusic(){
+  // Starts the portal-level music with void-whisper drone effects.
+  function startPortalMusic() {
     if(musicPlaying) return;
     musicPlaying = true;
     ensureAudio(); if(!ctx) return;
@@ -660,5 +810,31 @@ const Assets = (function(){
     blobTimer = setTimeout(voidWhisper, 600 + Math.random() * 1200);
   }
 
-  return {images, loadAll, playJump, playCollect, playHurt, playBonkersEnd, playVictory, startBonkersAudio, stopBonkersAudio, setMuted, isMuted: ()=>muted, createBellySprite, startMusic, stopMusic, startSkyMusic, startSpaceMusic, startHandbagMusic, startPortalMusic};
+  // Public API — everything game.js and renderer.js need from this module.
+  return {
+    images,
+    loadAll,
+    // Sound effects
+    playJump,
+    playCollect,
+    playHurt,
+    playBonkersEnd,
+    playVictory,
+    // Bonkers Mode audio
+    startBonkersAudio,
+    stopBonkersAudio,
+    // Music control
+    startMusic,
+    stopMusic,
+    startSkyMusic,
+    startSpaceMusic,
+    startHandbagMusic,
+    startPortalMusic,
+    // Settings
+    setMuted,
+    isMuted: () => muted,
+    // Sprite generation
+    createBellySprite,
+  };
+
 })();

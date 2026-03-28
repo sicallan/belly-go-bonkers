@@ -1,0 +1,535 @@
+/* ============================================================
+   Belly Go Bonkers — Learning Paths shared stylesheet
+   ============================================================ */
+
+/* ---- Fonts ---- */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;700;900&display=swap');
+
+/* ---- Reset & base ---- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Nunito', system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.65;
+  color: #2a1a3a;
+  background: #f4f0ff;
+  min-height: 100vh;
+}
+
+/* ---- Color themes — one per path ---- */
+:root {
+  --explorer-bg:     #fff8e1;
+  --explorer-accent: #ff9900;
+  --explorer-dark:   #c06000;
+  --explorer-light:  #fff3c0;
+
+  --builder-bg:     #e8f8ff;
+  --builder-accent: #0099dd;
+  --builder-dark:   #005a99;
+  --builder-light:  #c8eeff;
+
+  --creator-bg:     #f6eaff;
+  --creator-accent: #aa33ff;
+  --creator-dark:   #6600bb;
+  --creator-light:  #e8ccff;
+
+  --pink:   #ff5da2;
+  --pink-dark: #b0145a;
+}
+
+/* ---- Top navigation bar ---- */
+.top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 14px 24px;
+  background: linear-gradient(90deg, #ff5da2, #c848d8);
+  box-shadow: 0 3px 12px rgba(0,0,0,0.18);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.top-nav .nav-brand {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  color: #fff;
+  text-decoration: none;
+  text-shadow: 2px 2px 0 #6b0050;
+  letter-spacing: 1px;
+}
+
+.top-nav .nav-links {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.top-nav a.nav-link {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.18);
+  border: 2px solid rgba(255,255,255,0.35);
+  transition: background 0.15s, transform 0.1s;
+}
+.top-nav a.nav-link:hover { background: rgba(255,255,255,0.35); transform: translateY(-1px); }
+.top-nav a.nav-link.active { background: #fff; color: var(--pink); border-color: #fff; }
+
+/* ---- Page hero ---- */
+.page-hero {
+  text-align: center;
+  padding: 48px 24px 36px;
+}
+
+.path-badge {
+  display: inline-block;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  padding: 6px 18px;
+  border-radius: 20px;
+  margin-bottom: 18px;
+  text-transform: uppercase;
+}
+
+.page-hero h1 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(18px, 4vw, 34px);
+  line-height: 1.3;
+  margin-bottom: 14px;
+}
+
+.page-hero .hero-sub {
+  font-size: 18px;
+  font-weight: 700;
+  max-width: 600px;
+  margin: 0 auto 10px;
+  opacity: 0.85;
+}
+
+.page-hero .hero-ages {
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 5px 16px;
+  border-radius: 20px;
+  background: rgba(0,0,0,0.07);
+  margin-top: 6px;
+}
+
+/* ---- Progress dots ---- */
+.progress-dots {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 0 4px;
+}
+
+.progress-dots a {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  text-decoration: none;
+  color: #fff;
+  background: rgba(0,0,0,0.15);
+  border: 3px solid rgba(255,255,255,0.5);
+  transition: transform 0.15s;
+}
+.progress-dots a:hover { transform: scale(1.15); }
+.progress-dots a.active { background: rgba(0,0,0,0.35); border-color: #fff; }
+
+/* ---- Main content container ---- */
+.content {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 0 20px 60px;
+}
+
+/* ---- Task card ---- */
+.task-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 28px 30px 24px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.09);
+  border-left: 6px solid #ccc;
+  position: relative;
+}
+
+.task-card .task-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.task-number {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 20px;
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 3px 0 rgba(0,0,0,0.2);
+}
+
+.task-card h2 {
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.25;
+  margin-bottom: 4px;
+}
+
+.task-card .task-intro {
+  font-size: 16px;
+  margin-bottom: 18px;
+  line-height: 1.6;
+}
+
+/* ---- File badge ---- */
+.file-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Nunito', monospace;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 5px 14px;
+  border-radius: 8px;
+  background: #2a1a3a;
+  color: #e8d0ff;
+  margin-bottom: 12px;
+  user-select: all;
+}
+.file-badge::before { content: '📄'; }
+
+/* ---- Step labels ---- */
+.step-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: 6px;
+  margin-top: 16px;
+}
+
+/* ---- Code blocks ---- */
+.code-block {
+  background: #1e1433;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin: 8px 0 16px;
+  overflow-x: auto;
+  position: relative;
+}
+
+.code-block pre {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #c8b8f0;
+  white-space: pre;
+}
+
+/* Syntax colour helpers */
+.code-block .kw   { color: #ff79c6; }   /* keyword */
+.code-block .str  { color: #f1fa8c; }   /* string */
+.code-block .num  { color: #bd93f9; }   /* number */
+.code-block .cmt  { color: #6272a4; font-style: italic; } /* comment */
+.code-block .fn   { color: #50fa7b; }   /* function name */
+.code-block .prop { color: #8be9fd; }   /* property */
+
+/* Highlighted change line */
+.code-block .hl {
+  background: rgba(255, 220, 50, 0.18);
+  border-left: 3px solid #ffdd22;
+  margin-left: -20px;
+  padding-left: 17px;
+  margin-right: -20px;
+  padding-right: 20px;
+  display: block;
+}
+
+/* ---- Outcome box ---- */
+.outcome-box {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: #f0fff4;
+  border: 2px solid #52c41a;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 14px 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+.outcome-box .icon { font-size: 24px; flex-shrink: 0; }
+
+/* ---- Learn box ---- */
+.learn-box {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-top: 14px;
+  font-size: 15px;
+  background: #fff8e1;
+  border: 2px solid #ffc107;
+}
+.learn-box .icon { font-size: 24px; flex-shrink: 0; }
+.learn-box strong { display: block; margin-bottom: 4px; }
+
+/* ---- Info / tip box ---- */
+.tip-box {
+  background: #e8f4fd;
+  border: 2px solid #0099dd;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 14px 0;
+  font-size: 15px;
+}
+.tip-box strong { color: #005a99; }
+
+/* ---- Multi-step list ---- */
+.step-list {
+  list-style: none;
+  counter-reset: step-counter;
+  margin: 12px 0;
+}
+.step-list li {
+  counter-increment: step-counter;
+  display: flex;
+  gap: 14px;
+  margin-bottom: 18px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+.step-list li::before {
+  content: counter(step-counter);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  min-width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #2a1a3a;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ---- Bottom path navigation ---- */
+.path-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 20px 0 0;
+  border-top: 3px dashed #e0d8f0;
+  margin-top: 20px;
+}
+
+.path-nav a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: 12px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: #fff;
+  text-decoration: none;
+  background: #2a1a3a;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.25);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.path-nav a:hover { transform: translateY(-2px); box-shadow: 0 6px 0 rgba(0,0,0,0.2); }
+.path-nav a:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.2); }
+.path-nav a.play-btn { background: var(--pink); box-shadow: 0 4px 0 var(--pink-dark); }
+
+/* ---- Hub page cards ---- */
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  margin: 36px auto 0;
+  max-width: 900px;
+  padding: 0 20px;
+}
+
+.path-card {
+  border-radius: 22px;
+  padding: 30px 24px 26px;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  box-shadow: 0 6px 0 rgba(0,0,0,0.15), 0 12px 30px rgba(0,0,0,0.10);
+  transition: transform 0.15s, box-shadow 0.15s;
+  border: 4px solid transparent;
+}
+.path-card:hover { transform: translateY(-4px); box-shadow: 0 10px 0 rgba(0,0,0,0.12), 0 18px 36px rgba(0,0,0,0.12); }
+
+.path-card .path-emoji { font-size: 56px; line-height: 1; }
+.path-card .path-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.path-card .path-ages {
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.7;
+}
+.path-card .path-desc {
+  font-size: 15px;
+  line-height: 1.55;
+}
+.path-card .path-cta {
+  margin-top: 8px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  color: #fff;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+}
+
+/* Path card colour variants */
+.path-card.explorer {
+  background: var(--explorer-bg);
+  border-color: var(--explorer-accent);
+}
+.path-card.explorer .path-cta { background: var(--explorer-accent); }
+
+.path-card.builder {
+  background: var(--builder-bg);
+  border-color: var(--builder-accent);
+}
+.path-card.builder .path-cta { background: var(--builder-accent); }
+
+.path-card.creator {
+  background: var(--creator-bg);
+  border-color: var(--creator-accent);
+}
+.path-card.creator .path-cta { background: var(--creator-accent); }
+
+/* Task card accent colours per path */
+.explorer .task-card { border-left-color: var(--explorer-accent); }
+.explorer .task-number { background: var(--explorer-accent); }
+.explorer .progress-dots a.active,
+.explorer .progress-dots a:hover { background: var(--explorer-accent); }
+
+.builder .task-card { border-left-color: var(--builder-accent); }
+.builder .task-number { background: var(--builder-accent); }
+.builder .progress-dots a.active,
+.builder .progress-dots a:hover { background: var(--builder-accent); }
+
+.creator .task-card { border-left-color: var(--creator-accent); }
+.creator .task-number { background: var(--creator-accent); }
+.creator .progress-dots a.active,
+.creator .progress-dots a:hover { background: var(--creator-accent); }
+
+/* Explorer page background */
+.explorer body, body.explorer { background: var(--explorer-bg); }
+.builder  body, body.builder  { background: var(--builder-bg);  }
+.creator  body, body.creator  { background: var(--creator-bg);  }
+
+/* ---- Hub intro ---- */
+.hub-intro {
+  text-align: center;
+  padding: 40px 20px 0;
+  max-width: 680px;
+  margin: 0 auto;
+}
+.hub-intro h1 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(16px, 3.5vw, 28px);
+  color: #fff;
+  text-shadow: 3px 3px 0 var(--pink-dark);
+  line-height: 1.4;
+  margin-bottom: 16px;
+}
+.hub-intro p {
+  font-size: 17px;
+  color: rgba(255,255,255,0.92);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+/* Hub page special background */
+body.hub {
+  background: linear-gradient(160deg, #5ab4ff 0%, #ff84cc 100%);
+  min-height: 100vh;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 600px) {
+  .task-card { padding: 20px 18px; }
+  .task-card h2 { font-size: 17px; }
+  .code-block pre { font-size: 12px; }
+  .path-nav a { font-size: 9px; padding: 10px 16px; }
+  .top-nav .nav-brand { font-size: 9px; }
+}
+
+/* ---- Belly mascot animation in hub ---- */
+.hub-belly {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 35%, #ffdcee, #ff79b4 55%, #c8357a);
+  box-shadow: 0 5px 0 #8b1548, 0 8px 20px rgba(0,0,0,0.18);
+  margin: 16px auto;
+  position: relative;
+  animation: hubBounce 1s ease-in-out infinite;
+}
+.hub-belly::after {
+  content: '😜';
+  font-size: 28px;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -42%);
+}
+@keyframes hubBounce {
+  0%,100% { transform: translateY(0) scaleY(1); }
+  50%      { transform: translateY(-10px) scaleY(1.05); }
+}
+
+/* ---- Teacher note ---- */
+.teacher-note {
+  background: rgba(255,255,255,0.25);
+  border: 2px solid rgba(255,255,255,0.5);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin: 20px auto;
+  max-width: 700px;
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.95);
+  text-align: center;
+}

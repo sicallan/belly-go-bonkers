@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Explorer Path — Belly Go Bonkers Academy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { background: var(--explorer-bg); }
+    .page-hero { background: linear-gradient(135deg, #ff9900 0%, #ffcc00 100%); color: #fff; }
+    .page-hero .hero-sub { color: rgba(255,255,255,0.95); }
+    .path-badge { background: #fff; color: var(--explorer-dark); }
+    .page-hero .hero-ages { background: rgba(0,0,0,0.12); color: #fff; }
+    .progress-dots a { border-color: var(--explorer-accent); color: var(--explorer-dark); }
+  </style>
+</head>
+<body class="explorer">
+
+  <nav class="top-nav">
+    <a href="../index.html" class="nav-brand">🎮 Belly Go Bonkers</a>
+    <div class="nav-links">
+      <a href="index.html"    class="nav-link">🏠 Academy</a>
+      <a href="story.html"    class="nav-link">💛 Our Story</a>
+      <a href="explorer.html" class="nav-link active">⭐ Explorer</a>
+      <a href="builder.html"  class="nav-link">🔨 Builder</a>
+      <a href="creator.html"  class="nav-link">✨ Creator</a>
+      <a href="../index.html" class="nav-link">▶ Play</a>
+    </div>
+  </nav>
+
+  <div class="page-hero">
+    <span class="path-badge">Path 1</span>
+    <h1>⭐ Explorer</h1>
+    <p class="hero-sub">You found the secret control room!</p>
+    <p class="hero-sub" style="font-size:15px; font-weight:700; opacity:0.9;">
+      No new code to write — just find a value, change it, and see what happens!
+    </p>
+    <span class="hero-ages">Ages 6–7 &nbsp;·&nbsp; 5 tasks</span>
+    <div class="progress-dots" style="margin-top:18px;">
+      <a href="#task1" title="Task 1">1</a>
+      <a href="#task2" title="Task 2">2</a>
+      <a href="#task3" title="Task 3">3</a>
+      <a href="#task4" title="Task 4">4</a>
+      <a href="#task5" title="Task 5">5</a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="tip-box" style="margin: 24px 0 12px;">
+      <strong>🖥️ How to do these tasks:</strong><br>
+      Open the game in your browser. Then open the code file in a simple text editor
+      (Notepad on Windows, TextEdit on Mac, or VS Code). Change the value, save the file,
+      and <strong>refresh the browser</strong> to see your change in the game!
+    </div>
+
+    <!-- ── TASK 1 ── -->
+    <div class="task-card" id="task1">
+      <div class="task-header">
+        <div class="task-number">1</div>
+        <div>
+          <h2>🎨 Change Belly's colour</h2>
+        </div>
+      </div>
+      <p class="task-intro">
+        Belly is pink — but she doesn't have to be! A single line of code controls her colour.
+        Find it and change it to any colour you like.
+      </p>
+
+      <div class="step-label">Step 1 — open this file</div>
+      <span class="file-badge">js/entities.js</span>
+
+      <div class="step-label">Step 2 — find this line (it's near the top, inside the Belly class)</div>
+      <div class="code-block">
+        <pre><span class="cmt">// Explorer Task 1: change this colour!</span>
+<span class="kw">this</span>.<span class="prop">color</span> = <span class="hl"><span class="str">'#ff79b4'</span></span>;  <span class="cmt">// ← this is Belly's colour</span></pre>
+      </div>
+
+      <div class="step-label">Step 3 — change the colour code</div>
+      <p style="font-size:15px; margin-bottom:8px;">The <code style="background:#eee;padding:2px 6px;border-radius:4px;">#ff79b4</code> is a <strong>colour code</strong> — a # sign followed by 6 characters. Try one of these:</p>
+      <div class="code-block">
+        <pre><span class="str">'#00ccff'</span>  <span class="cmt">← sky blue</span>
+<span class="str">'#ffdd00'</span>  <span class="cmt">← sunny yellow</span>
+<span class="str">'#ff6600'</span>  <span class="cmt">← orange</span>
+<span class="str">'#44ff88'</span>  <span class="cmt">← mint green</span>
+<span class="str">'#cc44ff'</span>  <span class="cmt">← purple</span></pre>
+      </div>
+
+      <div class="outcome-box">
+        <span class="icon">🎮</span>
+        <div>Save the file, refresh the game, and Belly will be your new colour!</div>
+      </div>
+      <div class="learn-box">
+        <span class="icon">💡</span>
+        <div>
+          <strong>You just learned about: Variables</strong>
+          A variable stores a piece of information — like a colour.
+          The code <code style="background:#fff3c0;padding:1px 5px;border-radius:3px;">this.color = '#ff79b4'</code>
+          means "set my colour to pink". Changing the text changes what the variable stores.
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TASK 2 ── -->
+    <div class="task-card" id="task2">
+      <div class="task-header">
+        <div class="task-number">2</div>
+        <div>
+          <h2>⬆️ Change how high Belly jumps</h2>
+        </div>
+      </div>
+      <p class="task-intro">
+        Want Belly to jump like a rocket? Or barely hop off the ground?
+        One number controls the jump height.
+      </p>
+
+      <div class="step-label">Step 1 — open this file</div>
+      <span class="file-badge">js/entities.js</span>
+
+      <div class="step-label">Step 2 — find this line (near the very top of the Belly class)</div>
+      <div class="code-block">
+        <pre><span class="kw">static</span> <span class="prop">NORMAL_JUMP_IMPULSE</span>  = <span class="hl"><span class="num">-9</span></span>;  <span class="cmt">// Explorer Task 2!</span></pre>
+      </div>
+
+      <div class="step-label">Step 3 — try different numbers</div>
+      <div class="code-block">
+        <pre><span class="num">-5</span>   <span class="cmt">← tiny hop</span>
+<span class="num">-9</span>   <span class="cmt">← normal jump (the default)</span>
+<span class="num">-14</span>  <span class="cmt">← big jump</span>
+<span class="num">-20</span>  <span class="cmt">← mega jump (nearly hits the top!)</span></pre>
+      </div>
+
+      <div class="tip-box">
+        <strong>Why negative?</strong> On a screen, going <em>up</em> means a
+        <em>smaller</em> number — so negative numbers push Belly upward. The bigger
+        the negative number, the higher she goes!
+      </div>
+      <div class="outcome-box">
+        <span class="icon">🎮</span>
+        <div>Press Space or tap the game after refreshing — Belly now jumps to your new height!</div>
+      </div>
+      <div class="learn-box">
+        <span class="icon">💡</span>
+        <div>
+          <strong>You just learned about: Constants and negative numbers</strong>
+          A constant is a number with a name — like
+          <code style="background:#fff3c0;padding:1px 5px;border-radius:3px;">NORMAL_JUMP_IMPULSE</code>.
+          Naming it means you can find and change it easily. In game physics,
+          negative vertical speed means moving upward.
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TASK 3 ── -->
+    <div class="task-card" id="task3">
+      <div class="task-header">
+        <div class="task-number">3</div>
+        <div>
+          <h2>🍬 Change how many candy canes trigger Bonkers Mode</h2>
+        </div>
+      </div>
+      <p class="task-intro">
+        Bonkers Mode is the wild super-speed rush you get by collecting candy canes.
+        You can make it trigger after just <em>one</em> candy cane — or make it much harder to unlock!
+      </p>
+
+      <div class="step-label">Step 1 — open this file</div>
+      <span class="file-badge">js/game.js</span>
+
+      <div class="step-label">Step 2 — find the BONKERS_CONFIGS block and look for the <code style="background:#eee;padding:1px 5px;border-radius:3px;">normal</code> section</div>
+      <div class="code-block">
+        <pre><span class="prop">normal</span>: {
+  <span class="prop">candyCaneRequired</span>: <span class="hl"><span class="num">3</span></span>,  <span class="cmt">← change this number!</span>
+  <span class="prop">candyCaneSpawnMin</span>: <span class="num">700</span>,
+  <span class="prop">runDuration</span>: <span class="num">5.0</span>,
+  <span class="prop">speedMultiplier</span>: <span class="num">3.0</span>,
+  <span class="cmt">// ... more settings</span>
+},</pre>
+      </div>
+
+      <div class="step-label">Step 3 — try these values</div>
+      <div class="code-block">
+        <pre><span class="num">1</span>   <span class="cmt">← Bonkers after just one candy cane!</span>
+<span class="num">3</span>   <span class="cmt">← normal (the default)</span>
+<span class="num">6</span>   <span class="cmt">← much harder to unlock</span>
+<span class="num">10</span>  <span class="cmt">← nearly impossible (good luck!)</span></pre>
+      </div>
+
+      <div class="outcome-box">
+        <span class="icon">🎮</span>
+        <div>Collect candy canes in the game and see how quickly (or slowly!) Bonkers Mode triggers.</div>
+      </div>
+      <div class="learn-box">
+        <span class="icon">💡</span>
+        <div>
+          <strong>You just learned about: Objects</strong>
+          An object stores a group of settings together — like a box with labelled compartments.
+          <code style="background:#fff3c0;padding:1px 5px;border-radius:3px;">candyCaneRequired: 3</code>
+          means "the <em>candyCaneRequired</em> setting has a value of 3".
+          Change the number, change the game!
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TASK 4 ── -->
+    <div class="task-card" id="task4">
+      <div class="task-header">
+        <div class="task-number">4</div>
+        <div>
+          <h2>🏃 Change the starting game speed</h2>
+        </div>
+      </div>
+      <p class="task-intro">
+        The game starts at a speed of 160 pixels per second. Change this to make
+        the game feel really slow and relaxed — or terrifyingly fast!
+      </p>
+
+      <div class="step-label">Step 1 — open this file</div>
+      <span class="file-badge">js/game.js</span>
+
+      <div class="step-label">Step 2 — find the CONFIG block at the very top of the file</div>
+      <div class="code-block">
+        <pre><span class="kw">const</span> <span class="prop">CONFIG</span> = {
+  <span class="prop">INITIAL_SPEED</span>: <span class="hl"><span class="num">160</span></span>,  <span class="cmt">← change this! (px/second)</span>
+  <span class="prop">SPEED_RAMP</span>:    <span class="num">2</span>,    <span class="cmt">← how fast speed increases</span>
+  <span class="cmt">// ... more settings</span>
+};</pre>
+      </div>
+
+      <div class="step-label">Step 3 — try these values</div>
+      <div class="code-block">
+        <pre><span class="num">60</span>   <span class="cmt">← very slow — easy for beginners</span>
+<span class="num">160</span>  <span class="cmt">← normal speed (the default)</span>
+<span class="num">300</span>  <span class="cmt">← fast from the start!</span>
+<span class="num">500</span>  <span class="cmt">← good luck catching anything...</span></pre>
+      </div>
+
+      <div class="tip-box">
+        <strong>Bonus:</strong> Try also changing <code style="background:#eee;padding:1px 5px;border-radius:3px;">SPEED_RAMP: 2</code>
+        to <code style="background:#eee;padding:1px 5px;border-radius:3px;">0</code> — the speed will
+        never increase and the game stays the same speed forever!
+      </div>
+      <div class="outcome-box">
+        <span class="icon">🎮</span>
+        <div>Refresh and start the game — everything scrolls at your new speed from the very first second!</div>
+      </div>
+      <div class="learn-box">
+        <span class="icon">💡</span>
+        <div>
+          <strong>You just learned about: The CONFIG block</strong>
+          Grouping all the tunable numbers together in one place (a CONFIG block)
+          means you can find and tweak any value quickly without hunting through
+          hundreds of lines of code. This is a real trick that professional game developers use!
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TASK 5 ── -->
+    <div class="task-card" id="task5">
+      <div class="task-header">
+        <div class="task-number">5</div>
+        <div>
+          <h2>🌅 Change the sky colour</h2>
+        </div>
+      </div>
+      <p class="task-intro">
+        The level 1 sky is a gradient blend of three blue colours.
+        Change them to create a sunset, a stormy sky, or even a night sky!
+      </p>
+
+      <div class="step-label">Step 1 — open this file</div>
+      <span class="file-badge">js/renderer.js</span>
+
+      <div class="step-label">Step 2 — find the <code style="background:#eee;padding:1px 5px;border-radius:3px;">drawBackgroundLevel1</code> function and look for the sky gradient</div>
+      <div class="code-block">
+        <pre><span class="cmt">// Explorer Task 5: change the colour strings!</span>
+<span class="kw">const</span> <span class="prop">sky</span> = ctx.<span class="fn">createLinearGradient</span>(<span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>, groundY);
+sky.<span class="fn">addColorStop</span>(<span class="num">0</span>,    <span class="hl"><span class="str">'#5bc8ff'</span></span>);  <span class="cmt">← top of sky</span>
+sky.<span class="fn">addColorStop</span>(<span class="num">0.65</span>, <span class="hl"><span class="str">'#a8e4ff'</span></span>);  <span class="cmt">← middle of sky</span>
+sky.<span class="fn">addColorStop</span>(<span class="num">1</span>,    <span class="hl"><span class="str">'#d4f0ff'</span></span>);  <span class="cmt">← bottom of sky</span></pre>
+      </div>
+
+      <div class="step-label">Step 3 — try one of these sky themes</div>
+      <div class="code-block">
+        <pre><span class="cmt">// Sunset sky</span>
+sky.<span class="fn">addColorStop</span>(<span class="num">0</span>,    <span class="str">'#220066'</span>);
+sky.<span class="fn">addColorStop</span>(<span class="num">0.65</span>, <span class="str">'#cc3300'</span>);
+sky.<span class="fn">addColorStop</span>(<span class="num">1</span>,    <span class="str">'#ffaa00'</span>);
+
+<span class="cmt">// Night sky</span>
+sky.<span class="fn">addColorStop</span>(<span class="num">0</span>,    <span class="str">'#020015'</span>);
+sky.<span class="fn">addColorStop</span>(<span class="num">0.65</span>, <span class="str">'#0a0a44'</span>);
+sky.<span class="fn">addColorStop</span>(<span class="num">1</span>,    <span class="str">'#1a1a66'</span>);
+
+<span class="cmt">// Candy-floss sky</span>
+sky.<span class="fn">addColorStop</span>(<span class="num">0</span>,    <span class="str">'#ff88cc'</span>);
+sky.<span class="fn">addColorStop</span>(<span class="num">0.65</span>, <span class="str">'#ffbbee'</span>);
+sky.<span class="fn">addColorStop</span>(<span class="num">1</span>,    <span class="str">'#fff0ff'</span>);</pre>
+      </div>
+
+      <div class="outcome-box">
+        <span class="icon">🎮</span>
+        <div>Refresh and start the game on level 1 — the whole sky is now your new colours!</div>
+      </div>
+      <div class="learn-box">
+        <span class="icon">💡</span>
+        <div>
+          <strong>You just learned about: Gradients and functions</strong>
+          A gradient smoothly blends between colours. Each
+          <code style="background:#fff3c0;padding:1px 5px;border-radius:3px;">addColorStop(position, colour)</code>
+          call is a <em>function</em> — it does a job (adding a colour) when you call it.
+          The position is a number between 0 (top) and 1 (bottom).
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom nav -->
+    <div class="path-nav">
+      <a href="index.html">← All Paths</a>
+      <a href="../index.html" class="play-btn">▶ Play the Game!</a>
+      <a href="builder.html">🔨 Builder Path →</a>
+    </div>
+
+  </div><!-- /content -->
+</body>
+</html>

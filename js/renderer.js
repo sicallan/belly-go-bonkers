@@ -1,16 +1,51 @@
-const Renderer = (function(){
+// ============================================================
+// renderer.js — all canvas drawing for Belly Go Bonkers
+// ============================================================
+// This module draws everything the player sees: backgrounds,
+// Belly herself, obstacles, collectibles, the HUD, and
+// special effects for Bonkers Mode.
+//
+// Each level has its own drawBackgroundLevel*() function.
+// The public drawBackground() picks the right one automatically.
+//
+// Explorer Task 5: look inside drawBackgroundLevel1() to change
+// the sky colours!
+// ============================================================
+
+const Renderer = (function () {
+
   const canvas = document.getElementById('game-canvas');
-  const ctx = canvas.getContext('2d');
-  function clear(){ ctx.clearRect(0,0,canvas.width,canvas.height); }
-  function drawBackground(scroll, level){
-    if(level === 2){ drawBackgroundLevel2(scroll); return; }
-    if(level === 3){ drawBackgroundLevel3(scroll); return; }
-    if(level === 4){ drawBackgroundLevel4(scroll); return; }
-    if(level === 5){ drawBackgroundLevel5(scroll); return; }
-    if(level === 6){ drawBackgroundLevel6(scroll); return; }
+  const ctx    = canvas.getContext('2d');
+
+  // Distance from the bottom of the canvas to the ground surface (pixels).
+  // Used consistently across all level backgrounds.
+  const GROUND_OFFSET = 80;
+
+  // Clears the entire canvas ready for a new frame.
+  function clear() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  /**
+   * Draws the scrolling background for the current level.
+   * Automatically delegates to the matching level-specific function.
+   * @param {number} scroll - Total horizontal distance scrolled (pixels).
+   * @param {number} level  - Current level number (1–6).
+   * @returns {void}
+   */
+  function drawBackground(scroll, level) {
+    if (level === 2) { drawBackgroundLevel2(scroll); return; }
+    if (level === 3) { drawBackgroundLevel3(scroll); return; }
+    if (level === 4) { drawBackgroundLevel4(scroll); return; }
+    if (level === 5) { drawBackgroundLevel5(scroll); return; }
+    if (level === 6) { drawBackgroundLevel6(scroll); return; }
     drawBackgroundLevel1(scroll);
   }
-  function drawBackgroundLevel1(scroll){
+
+  // ======= LEVEL 1 — SUNNY PLAYGROUND BACKGROUND =========================
+  // Explorer Task 5: change the colour strings in addColorStop() to try
+  // different sky colours! '#5bc8ff' is the current blue.
+  function drawBackgroundLevel1(scroll) {
     const W = canvas.width, H = canvas.height;
     const groundY = H - 80;
 
@@ -128,7 +163,9 @@ const Renderer = (function(){
   }
 
   // ======= LEVEL 2 — UNDERGROUND CAVE BACKGROUND ==========================
-  function drawBackgroundLevel2(scroll){
+  // Dark purple/indigo cave with stalactites, bioluminescent crystals,
+  // glowing mushrooms, and fossil details in the floor.
+  function drawBackgroundLevel2(scroll) {
     const W = canvas.width, H = canvas.height;
     const groundY = H - 80;
 
@@ -320,7 +357,10 @@ const Renderer = (function(){
   // ======= END LEVEL 2 BACKGROUND ==========================================
 
   // ======= LEVEL 3 — SKY BACKGROUND ======================================
-  function drawBackgroundLevel3(scroll){
+  // ======= LEVEL 3 — SKY / CLOUDSCAPE BACKGROUND =========================
+  // Bright sky-blue gradient with layered clouds, rainbow arc, and
+  // a floating sun. Parallax layers move at different speeds.
+  function drawBackgroundLevel3(scroll) {
     const W = canvas.width, H = canvas.height;
     const groundY = H - 80;
 
@@ -421,7 +461,10 @@ const Renderer = (function(){
   // ======= END LEVEL 3 BACKGROUND ==========================================
 
   // ======= LEVEL 4 — DEEP SPACE BACKGROUND =================================
-  function drawBackgroundLevel4(scroll){
+  // ======= LEVEL 4 — OUTER SPACE BACKGROUND ===============================
+  // Deep black / indigo space with animated star field, nebula clouds,
+  // a planet, and a distant moon.
+  function drawBackgroundLevel4(scroll) {
     const W = canvas.width, H = canvas.height;
 
     // --- Black space fill ---
@@ -535,7 +578,10 @@ const Renderer = (function(){
   // ======= END LEVEL 4 BACKGROUND ==========================================
 
   // ======= LEVEL 5 BACKGROUND — inside a luxury silk-lined handbag ==========
-  function drawBackgroundLevel5(scroll){
+  // ======= LEVEL 5 — HANDBAG WORLD BACKGROUND =============================
+  // Warm pink/red fashion-boutique interior with shelves, price tags,
+  // fabric textures, and sparkle details.
+  function drawBackgroundLevel5(scroll) {
     const W = canvas.width, H = canvas.height;
     const groundY = H - 80;
     const now = performance.now() / 1000;
@@ -727,7 +773,10 @@ const Renderer = (function(){
   // ======= END LEVEL 5 BACKGROUND ==========================================
 
   // ======= LEVEL 6 BACKGROUND — STRANGE PORTAL WORLD =======================
-  function drawBackgroundLevel6(scroll){
+  // ======= LEVEL 6 — PORTAL WORLD BACKGROUND ==============================
+  // Dark otherworldly void with glowing portal rings, swirling energy,
+  // and spooky floating debris. The scariest (but most exciting) level!
+  function drawBackgroundLevel6(scroll) {
     const W = canvas.width, H = canvas.height;
     const groundY = H - 80;
     const now = performance.now() / 1000;
@@ -853,7 +902,16 @@ const Renderer = (function(){
   }
   // ======= END LEVEL 6 BACKGROUND ==========================================
 
-  function drawBelly(belly, overrideX, overrideY, invincible=false, accessories=[]){
+  /**
+   * Draws Belly at her current position with all accessories and effects.
+   * @param {Belly}    belly       - The Belly game object.
+   * @param {number}  [overrideX] - Optional x override (used on title screen).
+   * @param {number}  [overrideY] - Optional y override (used on title screen).
+   * @param {boolean} [invincible]- If true, draws the invincibility flicker.
+   * @param {string[]} [accessories] - Array of accessory id strings to render.
+   * @returns {void}
+   */
+  function drawBelly(belly, overrideX, overrideY, invincible = false, accessories = []) {
     const scale = belly.bonkersScale || 1;
     const drawX = overrideX !== undefined ? overrideX : belly.x;
     const drawY = overrideY !== undefined ? overrideY : belly.y;
@@ -1212,7 +1270,8 @@ const Renderer = (function(){
     ctx.restore(); // scale wrapper
   }
 
-  function drawBonkersFlash(t){
+  // Draws the white screen flash effect at the start of Bonkers Mode.
+  function drawBonkersFlash(t) {
     // white strobe
     ctx.fillStyle = `rgba(255,255,200,${Math.abs(Math.sin(t * 10)) * 0.65})`;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1253,13 +1312,15 @@ const Renderer = (function(){
     ctx.restore();
   }
 
-  function drawBonkersShake(t){
+  // Draws the screen-shake vignette overlay during the Bonkers shake phase.
+  function drawBonkersShake(t) {
     ctx.fillStyle = 'rgba(20,0,50,0.42)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawBonkersFlash(t);
   }
 
-  function drawBonkersRunLines(){
+  // Draws the speed lines behind Belly during the active Bonkers run.
+  function drawBonkersRunLines() {
     ctx.save();
     // BONKERS banner
     ctx.globalAlpha = 0.85;
@@ -1272,7 +1333,13 @@ const Renderer = (function(){
     ctx.restore();
   }
 
-  function drawLevelComplete(timer, level){
+  /**
+   * Draws the level-complete celebration overlay.
+   * @param {number} timer - Seconds the overlay has been visible.
+   * @param {number} level - The level that was just completed.
+   * @returns {void}
+   */
+  function drawLevelComplete(timer, level) {
     const W = canvas.width, H = canvas.height;
     // Soft golden wash
     ctx.fillStyle = `rgba(255,240,100,${0.10 + 0.05 * Math.sin(timer * 10)})`;
@@ -1317,7 +1384,16 @@ const Renderer = (function(){
     ctx.restore();
   }
 
-  function drawObstacle(o, bonkers){
+  /**
+   * Draws a single obstacle sprite at its current position.
+   * Prefers SVG image assets; falls back to a procedurally drawn shape.
+   * During Bonkers Mode the obstacle is scaled up for dramatic effect.
+   * Creator Task 2: add a new else-if block here to draw your new obstacle kind!
+   * @param {Obstacle} o       - The obstacle to draw.
+   * @param {boolean}  bonkers - True if Bonkers Mode is active.
+   * @returns {void}
+   */
+  function drawObstacle(o, bonkers) {
     ctx.save();
     if(bonkers){
       ctx.translate(o.x + o.w / 2, o.y + o.h / 2);
@@ -2712,7 +2788,15 @@ const Renderer = (function(){
     }
     ctx.restore();
   }
-  function drawCollectible(c, bonkers){
+  /**
+   * Draws a single collectible treat at its current position.
+   * Builder Task 1: once you add a new kind to entities.js, add its
+   * drawing code here following the same if(kind === ...) pattern.
+   * @param {Collectible} c       - The collectible to draw.
+   * @param {boolean}     bonkers - True if Bonkers Mode is active.
+   * @returns {void}
+   */
+  function drawCollectible(c, bonkers) {
     const s = bonkers ? 2 : 1;
     // golden aura for candy canes
     if(c.kind === 'candy-cane'){
@@ -2744,7 +2828,12 @@ const Renderer = (function(){
     ctx.textAlign='left'; ctx.textBaseline='alphabetic';
     ctx.restore();
   }
-  function drawPlank(p){
+  /**
+   * Draws a floating platform (plank) Belly can land on.
+   * @param {Plank} p - The plank to draw.
+   * @returns {void}
+   */
+  function drawPlank(p) {
     const x = p.x, y = p.y, w = p.w, h = p.h;
     // main plank body
     ctx.fillStyle = '#a0682a';
@@ -2772,7 +2861,8 @@ const Renderer = (function(){
   }
 
   // draws a mini candy-cane shape centred at (cx, cy) with given size
-  function drawMiniCandyCane(cx, cy, size, filled){
+  // Draws a single mini candy-cane icon used in the Bonkers Mode progress bar.
+  function drawMiniCandyCane(cx, cy, size, filled) {
     ctx.save();
     const sw = size * 0.28;
     ctx.lineWidth = sw;
@@ -2799,7 +2889,19 @@ const Renderer = (function(){
     ctx.restore();
   }
 
-  function drawHUD(score, lives, candyCanes=0, caneGoal=3, invincible=false, level=1, perfectRewardEligible=true){
+  /**
+   * Draws the heads-up display: score, lives, candy-cane progress bar,
+   * and level indicator.
+   * @param {number}  score                - Current player score.
+   * @param {number}  lives                - Remaining lives.
+   * @param {number}  [candyCanes]         - Candy canes collected toward Bonkers.
+   * @param {number}  [caneGoal]           - Candy canes required for Bonkers Mode.
+   * @param {boolean} [invincible]         - Whether invincibility is active.
+   * @param {number}  [level]              - Current level number (shown as label).
+   * @param {boolean} [perfectRewardEligible] - Whether the no-damage star is shown.
+   * @returns {void}
+   */
+  function drawHUD(score, lives, candyCanes = 0, caneGoal = 3, invincible = false, level = 1, perfectRewardEligible = true) {
     // pill behind score
     ctx.save();
     const pillH = 78;
@@ -2846,5 +2948,22 @@ const Renderer = (function(){
     ctx.fillText(label, startX + goal * caneStep + 40, rowY + 4);
     ctx.restore();
   }
-  return {clear,drawBackground,drawBelly,drawObstacle,drawCollectible,drawPlank,drawHUD,drawBonkersFlash,drawBonkersShake,drawBonkersRunLines,drawLevelComplete,ctx};
+  // Public API — all the drawing functions game.js needs.
+  return {
+    clear,
+    drawBackground,
+    drawBelly,
+    drawObstacle,
+    drawCollectible,
+    drawPlank,
+    drawHUD,
+    // Bonkers Mode effects
+    drawBonkersFlash,
+    drawBonkersShake,
+    drawBonkersRunLines,
+    drawLevelComplete,
+    // Exposed for game.js to use directly (e.g. drawing name-entry overlays)
+    ctx,
+  };
+
 })();

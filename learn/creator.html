@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Creator Path — Belly Go Bonkers Academy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { background: var(--creator-bg); }
+    .page-hero { background: linear-gradient(135deg, #8800ee 0%, #dd44ff 100%); color: #fff; }
+    .page-hero .hero-sub { color: rgba(255,255,255,0.95); }
+    .path-badge { background: #fff; color: var(--creator-dark); }
+    .page-hero .hero-ages { background: rgba(0,0,0,0.12); color: #fff; }
+    .progress-dots a { border-color: var(--creator-accent); }
+    .learn-box { background: #f0e8ff; border-color: var(--creator-accent); }
+  </style>
+</head>
+<body class="creator">
+
+  <nav class="top-nav">
+    <a href="../index.html" class="nav-brand">🎮 Belly Go Bonkers</a>
+    <div class="nav-links">
+      <a href="index.html"    class="nav-link">🏠 Academy</a>
+      <a href="story.html"    class="nav-link">💛 Our Story</a>
+      <a href="explorer.html" class="nav-link">⭐ Explorer</a>
+      <a href="builder.html"  class="nav-link">🔨 Builder</a>
+      <a href="creator.html"  class="nav-link active">✨ Creator</a>
+      <a href="../index.html" class="nav-link">▶ Play</a>
+    </div>
+  </nav>
+
+  <div class="page-hero">
+    <span class="path-badge">Path 3</span>
+    <h1>✨ Creator</h1>
+    <p class="hero-sub">You're writing the game, not just playing it!</p>
+    <p class="hero-sub" style="font-size:15px; font-weight:700; opacity:0.9;">
+      Write new logic from scratch. Understand how every frame works, then build your own features.
+    </p>
+    <span class="hero-ages">Ages 10–11 &nbsp;·&nbsp; 4 tasks</span>
+    <div class="progress-dots" style="margin-top:18px;">
+      <a href="#task1" title="Task 1">1</a>
+      <a href="#task2" title="Task 2">2</a>
+      <a href="#task3" title="Task 3">3</a>
+      <a href="#task4" title="Task 4">4</a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="tip-box" style="margin: 24px 0 12px;">
+      <strong>✨ Creator tip:</strong> These tasks are bigger than the Explorer and Builder ones.
+      Take them one step at a time. If something breaks, <em>undo</em> your last change (Ctrl+Z)
+      and try again — breaking things is how programmers learn!
+    </div>
+
+    <!-- ── TASK 1 ── -->
+    <div class="task-card" id="task1">
+      <div class="task-header">
+        <div class="task-number">1</div>
+        <div>
+          <h2>🔁 Trace the game loop</h2>
+        </div>
+      </div>
+      <p class="task-intro">
+        Before writing new code it helps to understand how the game ticks every frame.
+        Follow this chain through the code — no changes needed, just reading and exploring.
+      </p>
+
+      <div class="step-label">Open this file and find the loop() function</div>
+      <span class="file-badge">js/game.js</span>
+
+      <div class="code-block">
+        <pre><span class="cmt">/**
+ * The main game loop — called ~60 times per second.
+ * Creator Task 1: this is where the chain starts!
+ */</span>
+<span class="kw">function</span> <span class="fn">loop</span>(t) {
+  <span class="fn">requestAnimationFrame</span>(<span class="fn">loop</span>); <span class="cmt">// schedule next frame</span>
+
+  <span class="kw">const</span> dt = Math.<span class="fn">min</span>(<span class="num">50</span>, t - last) / <span class="num">1000</span>; <span class="cmt">// time since last frame (seconds)</span>
+  last = t;
+
+  <span class="kw">if</span> (state === <span class="str">'playing'</span>) <span class="fn">update</span>(dt); <span class="cmt">// ← step 1: move everything</span>
+  <span class="fn">render</span>();                              <span class="cmt">// ← step 2: draw everything</span>
+}</pre>
+      </div>
+
+      <p style="font-size:15px; margin: 12px 0;">Now follow the chain. Click into each file and read the function it calls:</p>
+
+      <ol class="step-list">
+        <li>
+          <div>
+            <strong>requestAnimationFrame(loop)</strong> — the browser calls <code style="background:#eee;padding:1px 5px;border-radius:3px;">loop()</code>
+            roughly 60 times per second. Each call is one <em>frame</em>.
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>dt (delta time)</strong> — the number of seconds since the last frame (usually about 0.016).
+            Every movement is multiplied by <code style="background:#eee;padding:1px 5px;border-radius:3px;">dt</code> so the game runs
+            at the same speed on fast and slow devices.
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>update(dt)</strong> in <code style="background:#eee;padding:1px 5px;border-radius:3px;">js/game.js</code> — moves
+            all the game objects. Look for where
+            <code style="background:#eee;padding:1px 5px;border-radius:3px;">belly.update(dt, 0.6, planks)</code>
+            is called. Then open <code style="background:#eee;padding:1px 5px;border-radius:3px;">js/entities.js</code> and read the
+            <code style="background:#eee;padding:1px 5px;border-radius:3px;">update()</code> method — notice how
+            <code style="background:#eee;padding:1px 5px;border-radius:3px;">this.vy += gravity</code> makes Belly fall down,
+            and <code style="background:#eee;padding:1px 5px;border-radius:3px;">this.y += this.vy</code> moves her.
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>render()</strong> in <code style="background:#eee;padding:1px 5px;border-radius:3px;">js/game.js</code> — calls
+            all the Renderer drawing functions. Look for
+            <code style="background:#eee;padding:1px 5px;border-radius:3px;">Renderer.drawBelly(...)</code>.
+            Then open <code style="background:#eee;padding:1px 5px;border-radius:3px;">js/renderer.js</code> and find
+            <code style="background:#eee;padding:1px 5px;border-radius:3px;">drawBelly()</code> to see how Belly is actually drawn.
+          </div>
+        </li>
+      </ol>
+
+      <div class="outcome-box">
+        <span class="icon">🗺️</span>
+        <div>
+          Draw the chain on paper: <strong>requestAnimationFrame → loop → update → render → drawBelly</strong>.
+          You now know how every frame of the game works!
+        </div>
+      </div>
+      <div class="learn-box">
+        <span class="icon">💡</span>
+        <div>
+          <strong>You just learned about: The game loop</strong>
+          A game loop is the heartbeat of every video game — even big ones like Minecraft.
+          Every frame it does the same three things: <em>check input</em>, <em>update positions</em>,
+          <em>draw everything</em>. Delta time (<code style="background:#e8ccff;padding:1px 5px;border-radius:3px;">dt</code>)
+          keeps the game fair on any device.
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TASK 2 ── -->
+    <div class="task-card" id="task2">
+      <div class="task-header">
+        <div class="task-number">2</div>
+        <div>
+          <h2>🛒 Add a brand-new obstacle kind</h2>
+        </div>
+      </div>
+      <p class="task-intro">
+        You're going to add a "shopping trolley" obstacle to the game from scratch.
+        This touches three files — size, hitbox, and drawing.
+      </p>
+
+      <div class="step-label">Change 1 of 3 — define the size and hitbox</div>
+      <span class="file-badge">js/entities.js</span>
+
+      <div class="step-label">Add to Obstacle.SIZES (find the level 1 section)</div>
+      <div class="code-block">
+        <pre><span class="kw">static</span> <span class="prop">SIZES</span> = {
+  <span class="cmt">// Level 1 — playground toys</span>
+  <span class="str">'toy-small'</span>: { <span class="prop">w</span>: <span class="num">56</span>, <span class="prop">h</span>: <span class="num">56</span> },
+  <span class="str">'dinosaur'</span>:  { <span class="prop">w</span>: <span class="num">64</span>, <span class="prop">h</span>: <span class="num">80</span> },
+  <span class="hl">  <span class="str">'shopping-trolley'</span>: { <span class="prop">w</span>: <span class="num">90</span>, <span class="prop">h</span>: <span class="num">68</span> },  <span class="cmt">← add this!</span></span>
+  <span class="cmt">// ...</span>
+};</pre>
+      </div>
+
+      <div class="step-label">Add to OBSTACLE_HITBOX (find the level 1 section at the top)</div>
+      <div class="code-block">
+        <pre><span class="kw">const</span> <span class="prop">OBSTACLE_HITBOX</span> = {
+  <span class="cmt">// Level 1</span>
+  <span class="str">'toy-small'</span>: [<span class="num">0.10</span>, <span class="num">0.10</span>, <span class="num">0.80</span>, <span class="num">0.80</span>],
+  <span class="hl">  <span class="str">'shopping-trolley'</span>: [<span class="num">0.06</span>, <span class="num">0.15</span>, <span class="num">0.88</span>, <span class="num">0.80</span>],  <span class="cmt">← add this!</span></span>
+  <span class="cmt">// ...</span>
+};</pre>
+      </div>
+
+      <div class="step-label">Change 2 of 3 — add it to the spawn list</div>
+      <span class="file-badge">js/game.js</span>
+      <div class="code-block">
+        <pre><span class="kw">const</span> <span class="prop">kindsByLevel</span> = {
+  <span class="prop">1</span>: [<span class="str">'toy-small'</span>, <span class="str">'toy-large'</span>, <span class="str">'toy-ball'</span>,
+     <span class="str">'bicycle'</span>, <span class="str">'blocks'</span>, <span class="str">'toy-car'</span>, <span class="str">'dinosaur'</span>,
+     <span class="hl">  <span class="str">'shopping-trolley'</span>,  <span class="cmt">← add this!</span></span>
+  ],
+  <span class="cmt">// ...</span>
+};</pre>
+      </div>
+
+      <div class="step-label">Change 3 of 3 — draw it on screen</div>
+      <span class="file-badge">js/renderer.js</span>
+      <div class="step-label">Find the drawObstacle function and add a drawing block. Start with a simple rectangle — you can make it fancy later!</div>
+      <div class="code-block">
+        <pre><span class="cmt">// Creator Task 2: add your new obstacle drawing block here!</span>
+<span class="hl"><span class="kw">if</span> (kind === <span class="str">'shopping-trolley'</span>) {
+  <span class="cmt">// Body of the trolley</span>
+  ctx.<span class="prop">fillStyle</span> = <span class="str">'#888'</span>;
+  ctx.<span class="fn">fillRect</span>(x + w*<span class="num">0.05</span>, y + h*<span class="num">0.25</span>, w*<span class="num">0.90</span>, h*<span class="num">0.55</span>);
+  <span class="cmt">// Wheels</span>
+  ctx.<span class="prop">fillStyle</span> = <span class="str">'#444'</span>;
+  ctx.<span class="fn">beginPath</span>();
+  ctx.<span class="fn">arc</span>(x + w*<span class="num">0.22</span>, y + h*<span class="num">0.88</span>, w*<span class="num">0.10</span>, <span class="num">0</span>, Math.<span class="prop">PI</span>*<span class="num">2</span>);
+  ctx.<span class="fn">arc</span>(x + w*<span class="num">0.78</span>, y + h*<span class="num">0.88</span>, w*<span class="num">0.10</span>, <span class="num">0</span>, Math.<span class="prop">PI</span>*<span class="num">2</span>);
+  ctx.<span class="fn">fill</span>();
+}</span></pre>
+      </div>
+
+      <div class="outcome-box">
+        <span class="icon">🎮</span>
+        <div>Refresh and play level 1 — shopping trolleys will start appearing as obstacles!</div>
+      </div>
+      <div class="learn-box">
+        <span class="icon">💡</span>
+        <div>
+          <strong>You just learned about: Classes and data tables</strong>
+          A class groups data (the size) and behaviour (the hitbox) together for one kind of thing.
+          The SIZES and OBSTACLE_HITBOX tables separate the <em>data</em> from the <em>logic</em>,
+          which means adding a new kind is just adding one line to each table — no big if/else chain needed.
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TASK 3 ── -->
+    <div class="task-card" id="task3">
+      <div class="task-header">
+        <div class="task-number">3</div>
+        <div>
+          <h2>📍 Write a new helper function</h2>
+        </div>
+      </div>
+      <p class="task-intro">
+        The codebase already has a function called <code style="background:#eee;padding:1px 5px;border-radius:3px;">aabb()</code>
+        that checks if two rectangles overlap. You're going to write a similar helper
+        — <code style="background:#eee;padding:1px 5px;border-radius:3px;">rectContainsPoint()</code> — that checks if a single point
+        is inside a rectangle. Then you'll test it yourself in the browser console.
+      </p>
+
+      <div class="step-label">First, understand aabb() — read this and think about the logic</div>
+      <span class="file-badge">js/entities.js</span>
+      <div class="code-block">
+        <pre><span class="cmt">/**
+ * Checks whether two rectangles overlap.
+ * Returns true if they intersect.
+ */</span>
+<span class="kw">function</span> <span class="fn">aabb</span>(a, b) {
+  <span class="kw">return</span> (
+    a.<span class="prop">x</span>         &lt; b.<span class="prop">x</span> + b.<span class="prop">w</span>  <span class="cmt">// a's left edge is left of b's right edge</span>
+    &amp;&amp; a.<span class="prop">x</span> + a.<span class="prop">w</span> &gt; b.<span class="prop">x</span>        <span class="cmt">// a's right edge is right of b's left edge</span>
+    &amp;&amp; a.<span class="prop">y</span>         &lt; b.<span class="prop">y</span> + b.<span class="prop">h</span>  <span class="cmt">// a's top is above b's bottom</span>
+    &amp;&amp; a.<span class="prop">y</span> + a.<span class="prop">h</span> &gt; b.<span class="prop">y</span>          <span class="cmt">// a's bottom is below b's top</span>
+  );
+}</pre>
+      </div>
+
+      <div class="step-label">Now write rectContainsPoint — a point is just a rectangle with zero size!</div>
+      <div class="step-label">Add this function just above aabb() in entities.js</div>
+      <div class="code-block">
+        <pre><span class="cmt">/**
+ * Checks whether a point lies inside a rectangle.
+ * @param {{ x, y, w, h }} rect - The rectangle.
+ * @param {number} px - Point x position.
+ * @param {number} py - Point y position.
+ * @returns {boolean}
+ */</span>
+<span class="kw">function</span> <span class="fn">rectContainsPoint</span>(rect, px, py) {
+  <span class="kw">return</span> (
+    px &gt;= rect.<span class="prop">x</span>              <span class="cmt">// point is right of left edge</span>
+    &amp;&amp; px &lt;= rect.<span class="prop">x</span> + rect.<span class="prop">w</span>  <span class="cmt">// point is left of right edge</span>
+    &amp;&amp; py &gt;= rect.<span class="prop">y</span>              <span class="cmt">// point is below top edge</span>
+    &amp;&amp; py &lt;= rect.<span class="prop">y</span> + rect.<span class="prop">h</span>   <span class="cmt">// point is above bottom edge</span>
+  );
+}</pre>
+      </div>
+
+      <div class="step-label">Add it to the exported object at the bottom of the file</div>
+      <div class="code-block">
+        <pre><span class="kw">const</span> <span class="prop">exported</span> = {
+  Belly, Obstacle, Collectible, Plank, aabb,
+  <span class="hl">  rectContainsPoint,  <span class="cmt">← add this!</span></span>
+};</pre>
+      </div>
+
+      <div class="step-label">Test it in the browser console (press F12 → Console tab)</div>
+      <div class="code-block">
+        <pre><span class="cmt">// Type these lines into the console and press Enter each time:</span>
+exported.<span class="fn">rectContainsPoint</span>({<span class="prop">x</span>:<span class="num">10</span>, <span class="prop">y</span>:<span class="num">10</span>, <span class="prop">w</span>:<span class="num">50</span>, <span class="prop">h</span>:<span class="num">50</span>}, <span class="num">30</span>, <span class="num">30</span>)
+<span class="cmt">// Should print: true  (point 30,30 is inside the rectangle)</span>
+
+exported.<span class="fn">rectContainsPoint</span>({<span class="prop">x</span>:<span class="num">10</span>, <span class="prop">y</span>:<span class="num">10</span>, <span class="prop">w</span>:<span class="num">50</span>, <span class="prop">h</span>:<span class="num">50</span>}, <span class="num">5</span>, <span class="num">5</span>)
+<span class="cmt">// Should print: false (point 5,5 is outside — top-left of rectangle)</span></pre>
+      </div>
+
+      <div class="outcome-box">
+        <span class="icon">✅</span>
+        <div>If the console prints <code style="background:#eee;padding:1px 5px;border-radius:3px;">true</code> then <code style="background:#eee;padding:1px 5px;border-radius:3px;">false</code>, your function works perfectly!</div>
+      </div>
+      <div class="learn-box">
+        <span class="icon">💡</span>
+        <div>
+          <strong>You just learned about: Writing and testing functions</strong>
+          A helper function does one small job and can be reused anywhere.
+          Writing tests in the browser console is how professional developers
+          quickly check if new code works before using it in a bigger system.
+          This technique is called <em>unit testing</em>.
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TASK 4 ── -->
+    <div class="task-card" id="task4">
+      <div class="task-header">
+        <div class="task-number">4</div>
+        <div>
+          <h2>🛡️ Add a shield power-up that blocks one hit</h2>
+        </div>
+      </div>
+      <p class="task-intro">
+        This is the biggest challenge in the whole Academy. You're going to add a shield
+        collectible that protects Belly from one obstacle hit. Take it step by step —
+        each step produces something you can test before moving on.
+      </p>
+
+      <div class="tip-box">
+        <strong>Plan before you code!</strong> The shield needs four pieces:
+        a <em>state variable</em> (does Belly have a shield?),
+        a <em>collectible</em> that gives it to her,
+        a <em>collision check</em> that uses it up,
+        and a <em>visual effect</em> so the player can see it.
+      </div>
+
+      <div class="step-label">Step A — Add the shield state to Belly</div>
+      <span class="file-badge">js/entities.js</span>
+      <div class="code-block">
+        <pre><span class="cmt">// Inside the Belly constructor, add this line:</span>
+<span class="hl"><span class="kw">this</span>.<span class="prop">hasShield</span> = <span class="kw">false</span>;</span></pre>
+      </div>
+
+      <div class="step-label">Step B — Create the shield collectible</div>
+      <span class="file-badge">js/entities.js</span>
+      <div class="code-block">
+        <pre><span class="cmt">// In COLLECTIBLE_RADII, add the shield:</span>
+<span class="kw">const</span> <span class="prop">COLLECTIBLE_RADII</span> = {
+  <span class="prop">donut</span>: <span class="num">16</span>,
+  <span class="cmt">// ...</span>
+  <span class="hl">  <span class="prop">shield</span>: <span class="num">18</span>,  <span class="cmt">← add this!</span></span>
+};</pre>
+      </div>
+
+      <span class="file-badge">js/game.js</span>
+      <div class="code-block">
+        <pre><span class="cmt">// In spawnCollectible, add 'shield' to the kinds array:</span>
+<span class="kw">const</span> <span class="prop">kinds</span> = [
+  <span class="str">'donut'</span>, <span class="str">'pizza'</span>, <span class="str">'icecream'</span>,
+  <span class="cmt">// ...</span>
+  <span class="hl">  <span class="str">'shield'</span>,  <span class="cmt">← add this!</span></span>
+];</pre>
+      </div>
+
+      <div class="step-label">Step C — Apply the shield when Belly collects it</div>
+      <span class="file-badge">js/game.js</span>
+      <div class="step-label">Find the collectible collision section (look for "cKind === 'candy-cane'") and add a new check</div>
+      <div class="code-block">
+        <pre><span class="kw">if</span> (cKind === <span class="str">'candy-cane'</span>) {
+  score += CONFIG.<span class="prop">CANDY_SCORE</span>;
+  candyCaneCount++;
+  <span class="cmt">// ...</span>
+<span class="hl">} <span class="kw">else if</span> (cKind === <span class="str">'shield'</span>) {
+  belly.<span class="prop">hasShield</span> = <span class="kw">true</span>;  <span class="cmt">// activate the shield!</span>
+  score += <span class="num">25</span>;               <span class="cmt">// small bonus for finding it</span></span>
+} <span class="kw">else</span> {
+  score += CONFIG.<span class="prop">COLLECT_SCORE</span>;
+  belly.<span class="prop">collect</span>++;
+}</pre>
+      </div>
+
+      <div class="step-label">Step D — Block one obstacle hit with the shield</div>
+      <span class="file-badge">js/game.js</span>
+      <div class="step-label">Find the obstacle collision section (look for "belly.lives--") and add the shield check</div>
+      <div class="code-block">
+        <pre><span class="kw">if</span> (exported.<span class="fn">aabb</span>(belly.<span class="fn">hitBox</span>(), obstacles[i].<span class="fn">hitBox</span>())) {
+  <span class="kw">if</span> (invincible) { obstacles.<span class="fn">splice</span>(i, <span class="num">1</span>); <span class="kw">continue</span>; }
+  obstacles.<span class="fn">splice</span>(i, <span class="num">1</span>);
+<span class="hl">  <span class="kw">if</span> (belly.<span class="prop">hasShield</span>) {
+    belly.<span class="prop">hasShield</span> = <span class="kw">false</span>;  <span class="cmt">// shield absorbs the hit!</span>
+    <span class="kw">continue</span>;                  <span class="cmt">// skip the lives-lost code below</span>
+  }</span>
+  belly.<span class="prop">lives</span>--;
+  lostLifeThisLevel = <span class="kw">true</span>;
+  <span class="cmt">// ...</span>
+}</pre>
+      </div>
+
+      <div class="step-label">Step E — Draw the shield so the player can see it</div>
+      <span class="file-badge">js/renderer.js</span>
+      <div class="step-label">Find the drawBelly function and add this after the main body drawing code</div>
+      <div class="code-block">
+        <pre><span class="cmt">// Draw the shield ring around Belly when active</span>
+<span class="hl"><span class="kw">if</span> (belly.<span class="prop">hasShield</span>) {
+  ctx.<span class="fn">save</span>();
+  ctx.<span class="prop">strokeStyle</span> = <span class="str">'#00eeff'</span>;
+  ctx.<span class="prop">lineWidth</span> = <span class="num">4</span>;
+  ctx.<span class="prop">globalAlpha</span> = <span class="num">0.75</span>;
+  ctx.<span class="fn">beginPath</span>();
+  ctx.<span class="fn">arc</span>(
+    belly.<span class="prop">x</span> + belly.<span class="prop">width</span>  / <span class="num">2</span>,
+    belly.<span class="prop">y</span> + belly.<span class="prop">height</span> / <span class="num">2</span>,
+    belly.<span class="prop">width</span> * <span class="num">0.65</span>,
+    <span class="num">0</span>,
+    Math.<span class="prop">PI</span> * <span class="num">2</span>
+  );
+  ctx.<span class="fn">stroke</span>();
+  ctx.<span class="fn">restore</span>();
+}</span></pre>
+      </div>
+
+      <div class="outcome-box">
+        <span class="icon">🎮</span>
+        <div>
+          Refresh and play. When you collect the shield, a glowing ring appears around Belly.
+          Run into an obstacle — the ring disappears but Belly survives!
+        </div>
+      </div>
+      <div class="learn-box">
+        <span class="icon">💡</span>
+        <div>
+          <strong>You just learned about: Building a game mechanic from scratch</strong>
+          Every power-up in every game is built from the same four pieces:
+          a <em>state variable</em>, a <em>way to activate it</em>, a <em>check that uses it</em>,
+          and a <em>visual cue</em> for the player. You can use this exact same pattern
+          to add any power-up you can imagine — double jump, speed boost, magnet for collecting treats…
+        </div>
+      </div>
+    </div>
+
+    <!-- Congratulations -->
+    <div style="text-align:center; padding: 32px 20px; background: linear-gradient(135deg, #8800ee, #dd44ff); border-radius: 20px; margin: 20px 0; color: #fff;">
+      <div style="font-size: 52px; margin-bottom: 12px;">🎉</div>
+      <h2 style="font-family: 'Press Start 2P', monospace; font-size: 16px; margin-bottom: 12px; text-shadow: 2px 2px 0 rgba(0,0,0,0.3);">You're a game developer!</h2>
+      <p style="font-size: 16px; font-weight: 700; opacity: 0.95; max-width: 500px; margin: 0 auto;">
+        You traced the game loop, added an obstacle, wrote a utility function, and built
+        a complete power-up mechanic. That's real game development. Keep experimenting —
+        and remember you can always Ctrl+Z to undo!
+      </p>
+    </div>
+
+    <!-- Bottom nav -->
+    <div class="path-nav">
+      <a href="builder.html">← Builder Path</a>
+      <a href="../index.html" class="play-btn">▶ Play the Game!</a>
+      <a href="index.html">🏠 All Paths</a>
+    </div>
+
+  </div><!-- /content -->
+</body>
+</html>
