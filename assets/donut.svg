@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <defs>
+    <radialGradient id="dough" cx="50%" cy="50%">
+      <stop offset="0%" stop-color="#f5c87a"/>
+      <stop offset="100%" stop-color="#c47f2a"/>
+    </radialGradient>
+    <radialGradient id="glaze" cx="40%" cy="35%">
+      <stop offset="0%" stop-color="#ffadd2"/>
+      <stop offset="100%" stop-color="#c01060"/>
+    </radialGradient>
+  </defs>
+  <circle cx="32" cy="32" r="28" fill="url(#dough)"/>
+  <circle cx="32" cy="32" r="24" fill="url(#glaze)"/>
+  <circle cx="32" cy="32" r="10" fill="#8bd3ff"/>
+  <rect x="16" y="18" width="8" height="3" rx="1.5" fill="#ffd24d"  transform="rotate(-30,20,20)"/>
+  <rect x="38" y="14" width="8" height="3" rx="1.5" fill="#4dd9ff"  transform="rotate(20,42,16)"/>
+  <rect x="44" y="30" width="8" height="3" rx="1.5" fill="#7fff7f"  transform="rotate(-10,48,32)"/>
+  <rect x="34" y="44" width="8" height="3" rx="1.5" fill="#ff7fbf"  transform="rotate(25,38,46)"/>
+  <rect x="14" y="36" width="8" height="3" rx="1.5" fill="#ffd24d"  transform="rotate(40,18,38)"/>
+  <ellipse cx="24" cy="20" rx="5" ry="3" fill="rgba(255,255,255,0.4)" transform="rotate(-25,24,20)"/>
+</svg>

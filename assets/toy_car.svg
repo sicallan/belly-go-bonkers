@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="52" viewBox="0 0 80 52">
+  <!-- body shadow -->
+  <ellipse cx="40" cy="50" rx="32" ry="4" fill="rgba(0,0,0,0.12)"/>
+  <!-- main body -->
+  <rect x="4" y="26" width="72" height="20" rx="8" fill="#e02020"/>
+  <rect x="4" y="26" width="72" height="6"  rx="8" fill="#ff5555"/>
+  <!-- cabin -->
+  <path d="M18 26 Q22 10 32 9 L52 9 Q60 9 64 26 Z" fill="#cc1515"/>
+  <path d="M18 26 Q22 11 32 10 L52 10 Q60 10 64 26 Z" fill="#dd2020"/>
+  <!-- windscreen -->
+  <path d="M24 26 Q27 14 33 13 L48 13 Q55 14 58 26 Z" fill="#aaddff" opacity="0.85"/>
+  <path d="M25 26 Q28 16 33 15 L48 15 Q54 16 57 26 Z" fill="#cceeff" opacity="0.5"/>
+  <!-- windows line -->
+  <line x1="40" y1="13" x2="40" y2="26" stroke="#bb1010" stroke-width="2"/>
+  <!-- front wheel -->
+  <circle cx="60" cy="42" r="10" fill="#222"/>
+  <circle cx="60" cy="42" r="6"  fill="#555"/>
+  <circle cx="60" cy="42" r="3"  fill="#aaa"/>
+  <!-- rear wheel -->
+  <circle cx="20" cy="42" r="10" fill="#222"/>
+  <circle cx="20" cy="42" r="6"  fill="#555"/>
+  <circle cx="20" cy="42" r="3"  fill="#aaa"/>
+  <!-- wheel arches -->
+  <path d="M8  34 Q8  22 20 22 Q32 22 32 34" fill="#cc1515"/>
+  <path d="M48 34 Q48 22 60 22 Q72 22 72 34" fill="#cc1515"/>
+  <!-- headlight -->
+  <ellipse cx="72" cy="32" rx="4" ry="3" fill="#fffaaa" stroke="#ccc" stroke-width="1"/>
+  <!-- tail light -->
+  <ellipse cx="8"  cy="32" rx="4" ry="3" fill="#ff4444" stroke="#aa0000" stroke-width="1"/>
+  <!-- racing stripe -->
+  <line x1="4" y1="36" x2="76" y2="36" stroke="#fff" stroke-width="2" opacity="0.35"/>
+</svg>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="80" viewBox="0 0 64 80">
+  <defs>
+    <radialGradient id="ball" cx="38%" cy="32%">
+      <stop offset="0%" stop-color="#ff80c0"/>
+      <stop offset="100%" stop-color="#d40060"/>
+    </radialGradient>
+  </defs>
+  <!-- stick -->
+  <rect x="29" y="38" width="6" height="40" rx="3" fill="#e8d0a0" stroke="#c4a060" stroke-width="1"/>
+  <!-- candy ball -->
+  <circle cx="32" cy="26" r="22" fill="url(#ball)"/>
+  <!-- spiral stripes -->
+  <path d="M32 6 Q54 16 48 36 Q44 50 30 46" stroke="rgba(255,255,255,0.55)" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M14 18 Q10 34 20 44" stroke="rgba(255,255,255,0.35)" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- shine -->
+  <ellipse cx="40" cy="16" rx="6" ry="4" fill="rgba(255,255,255,0.45)" transform="rotate(-30,40,16)"/>
+</svg>

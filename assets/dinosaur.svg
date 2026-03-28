@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="80" viewBox="0 0 64 80">
+  <!-- tail -->
+  <ellipse cx="10" cy="56" rx="10" ry="6" fill="#4caf50" transform="rotate(-20,10,56)"/>
+  <ellipse cx="4"  cy="62" rx="6"  ry="4" fill="#43a047" transform="rotate(-30,4,62)"/>
+  <!-- body -->
+  <ellipse cx="34" cy="52" rx="18" ry="16" fill="#4caf50"/>
+  <ellipse cx="34" cy="50" rx="17" ry="14" fill="#66bb6a"/>
+  <!-- belly patch -->
+  <ellipse cx="36" cy="54" rx="10" ry="10" fill="#a5d6a7" opacity="0.7"/>
+  <!-- neck -->
+  <rect x="38" y="28" width="12" height="20" rx="6" fill="#4caf50"/>
+  <rect x="39" y="28" width="8"  height="20" rx="5" fill="#66bb6a"/>
+  <!-- head -->
+  <ellipse cx="46" cy="22" rx="14" ry="11" fill="#4caf50"/>
+  <ellipse cx="46" cy="21" rx="13" ry="10" fill="#66bb6a"/>
+  <!-- snout -->
+  <ellipse cx="57" cy="24" rx="7" ry="5" fill="#4caf50"/>
+  <!-- nostril -->
+  <circle cx="61" cy="22" r="1.5" fill="#2e7d32"/>
+  <!-- eye -->
+  <circle  cx="48" cy="17" r="5"   fill="#fff"/>
+  <circle  cx="49" cy="17" r="3.2" fill="#1a1a1a"/>
+  <circle  cx="50" cy="16" r="1.2" fill="#fff"/>
+  <!-- teeth -->
+  <polygon points="54,26 56,30 58,26" fill="#fff"/>
+  <polygon points="57,26 59,29 61,26" fill="#fff"/>
+  <!-- spines on back -->
+  <polygon points="38,36 42,24 46,36" fill="#388e3c" opacity="0.8"/>
+  <polygon points="44,32 47,20 50,32" fill="#388e3c" opacity="0.8"/>
+  <!-- arms (tiny!) -->
+  <line x1="44" y1="46" x2="36" y2="52" stroke="#4caf50" stroke-width="5" stroke-linecap="round"/>
+  <line x1="36" y1="52" x2="33" y2="56" stroke="#388e3c" stroke-width="3" stroke-linecap="round"/>
+  <!-- legs -->
+  <rect x="26" y="62" width="11" height="16" rx="5" fill="#388e3c"/>
+  <rect x="40" y="62" width="11" height="16" rx="5" fill="#388e3c"/>
+  <!-- feet -->
+  <ellipse cx="31" cy="78" rx="9" ry="4" fill="#2e7d32"/>
+  <ellipse cx="45" cy="78" rx="9" ry="4" fill="#2e7d32"/>
+</svg>

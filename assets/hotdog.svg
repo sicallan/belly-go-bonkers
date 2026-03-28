@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="50" viewBox="0 0 80 50">
+  <defs>
+    <radialGradient id="bun" cx="50%" cy="20%">
+      <stop offset="0%" stop-color="#f5d08a"/>
+      <stop offset="100%" stop-color="#c47f2a"/>
+    </radialGradient>
+  </defs>
+  <!-- bun top -->
+  <ellipse cx="40" cy="18" rx="34" ry="16" fill="url(#bun)"/>
+  <!-- sausage -->
+  <rect x="6" y="26" width="68" height="14" rx="7" fill="#9e3010"/>
+  <!-- bun bottom -->
+  <ellipse cx="40" cy="40" rx="34" ry="10" fill="#d4952a"/>
+  <!-- mustard squiggle -->
+  <path d="M14 33 Q22 28 30 33 Q38 38 46 33 Q54 28 66 33" stroke="#ffd24d" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- sesame seeds -->
+  <ellipse cx="28" cy="12" rx="3" ry="2" fill="rgba(255,255,255,0.6)" transform="rotate(-20,28,12)"/>
+  <ellipse cx="42" cy="9"  rx="3" ry="2" fill="rgba(255,255,255,0.6)" transform="rotate(10,42,9)"/>
+  <ellipse cx="54" cy="13" rx="3" ry="2" fill="rgba(255,255,255,0.6)" transform="rotate(-10,54,13)"/>
+  <!-- shine on bun -->
+  <ellipse cx="30" cy="13" rx="8" ry="4" fill="rgba(255,255,255,0.25)" transform="rotate(-15,30,13)"/>
+</svg>

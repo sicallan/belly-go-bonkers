@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="80" viewBox="0 0 64 80">
+  <defs>
+    <radialGradient id="scoop" cx="45%" cy="35%">
+      <stop offset="0%" stop-color="#fff0f5"/>
+      <stop offset="100%" stop-color="#ffadd2"/>
+    </radialGradient>
+    <radialGradient id="cone" cx="50%" cy="20%">
+      <stop offset="0%" stop-color="#f5d08a"/>
+      <stop offset="100%" stop-color="#c48c2a"/>
+    </radialGradient>
+  </defs>
+  <!-- cone -->
+  <polygon points="32,80 8,38 56,38" fill="url(#cone)"/>
+  <!-- cone lines -->
+  <line x1="32" y1="80" x2="18" y2="46" stroke="#a87020" stroke-width="1" opacity="0.5"/>
+  <line x1="32" y1="80" x2="46" y2="46" stroke="#a87020" stroke-width="1" opacity="0.5"/>
+  <!-- scoop -->
+  <circle cx="32" cy="30" r="22" fill="url(#scoop)"/>
+  <!-- second scoop hint -->
+  <ellipse cx="32" cy="12" rx="14" ry="18" fill="#ffadd2"/>
+  <!-- sprinkles -->
+  <rect x="22" y="18" width="6" height="3" rx="1" fill="#ff5da2" transform="rotate(-25,25,20)"/>
+  <rect x="36" y="14" width="6" height="3" rx="1" fill="#4dd9ff" transform="rotate(15,39,16)"/>
+  <rect x="28" y="8"  width="6" height="3" rx="1" fill="#ffd24d" transform="rotate(-10,31,9)"/>
+  <!-- shine on main scoop -->
+  <ellipse cx="38" cy="22" rx="5" ry="3" fill="rgba(255,255,255,0.5)" transform="rotate(-20,38,22)"/>
+</svg>

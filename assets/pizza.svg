@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <defs>
+    <radialGradient id="crust" cx="50%" cy="100%">
+      <stop offset="0%" stop-color="#e8b96a"/>
+      <stop offset="100%" stop-color="#c47f2a"/>
+    </radialGradient>
+  </defs>
+  <!-- crust triangle -->
+  <polygon points="32,4 60,58 4,58" fill="url(#crust)"/>
+  <!-- tomato base -->
+  <polygon points="32,14 52,54 12,54" fill="#e03c2d"/>
+  <!-- cheese -->
+  <polygon points="32,22 46,50 18,50" fill="#ffd966"/>
+  <!-- pepperoni circles -->
+  <circle cx="32" cy="36" r="5" fill="#9e2a10"/>
+  <circle cx="24" cy="46" r="4" fill="#9e2a10"/>
+  <circle cx="40" cy="46" r="4" fill="#9e2a10"/>
+  <!-- shine -->
+  <ellipse cx="30" cy="28" rx="3" ry="2" fill="rgba(255,255,255,0.35)" transform="rotate(-15,30,28)"/>
+</svg>

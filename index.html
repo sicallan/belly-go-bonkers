@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Belly Go Bonkers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Always-visible HUD buttons -->
+  <button id="sound-toggle" aria-pressed="false" title="Mute / Unmute">🔊</button>
+  <button id="exit-button" title="Exit to title">✕ Exit</button>
+
+  <!-- Title / scores overlay -->
+  <main id="ui">
+    <div class="title-screen">
+      <h1 id="game-title">Belly Go Bonkers!</h1>
+      <div id="title-belly" aria-hidden="true"></div>
+
+      <div id="recent-scores">
+        <div class="scores-header">🏆 HIGH SCORES 🏆</div>
+        <ul id="scores-list"></ul>
+        <div class="scores-empty" id="scores-empty">No scores yet — be first!</div>
+      </div>
+
+      <button id="start-btn">▶ PLAY!</button>
+      <div class="difficulty-picker" aria-label="Bonkers difficulty">
+        <label for="bonkers-mode-select">Bonkers Difficulty</label>
+        <select id="bonkers-mode-select" title="Choose bonkers difficulty mode">
+          <option value="easy">Easy</option>
+          <option value="normal">Normal</option>
+          <option value="hard">Hard</option>
+          <option value="chaos">Chaos</option>
+        </select>
+      </div>
+      <div class="controls-hint">⬆ JUMP &nbsp;|&nbsp; HOLD TO BOOST &nbsp;|&nbsp; SWIPE ON TOUCH</div>
+    </div>
+  </main>
+
+  <canvas id="game-canvas"></canvas>
+
+  <script src="js/assets.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/entities.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

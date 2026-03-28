@@ -1,0 +1,406 @@
+/* === Reset === */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#8bd3ff;
+  font-family:'Press Start 2P',system-ui,monospace;color:#213}
+
+/* === Canvas sits behind everything === */
+canvas#game-canvas{position:fixed;left:0;top:0;width:100%;height:100%;z-index:1;display:block}
+
+/* === Title overlay === */
+#ui{position:fixed;left:0;top:0;width:100%;height:100%;z-index:20;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(160deg,rgba(90,180,255,0.92) 0%,rgba(255,160,220,0.88) 100%)}
+.title-screen{display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;
+  padding:20px;max-height:100vh;overflow:auto}
+
+/* === Title text === */
+#game-title{
+  font-size:clamp(18px,4.5vw,46px);
+  color:#fff;
+  text-shadow:
+    4px 4px 0 #b0145a,
+    8px 8px 0 rgba(0,0,0,0.15);
+  letter-spacing:2px;
+  animation:pop 1.3s ease-in-out infinite;
+  transform-origin:center}
+@keyframes pop{0%,100%{transform:scale(1) rotate(-1deg)}50%{transform:scale(1.06) rotate(1deg)}}
+
+/* === Bouncing belly on title === */
+#title-belly{
+  width:90px;height:90px;border-radius:50%;
+  background:radial-gradient(circle at 38% 35%,#ffdcee,#ff79b4 55%,#c8357a);
+  box-shadow:0 6px 0 #8b1548,0 10px 24px rgba(0,0,0,0.18);
+  animation:bounce 0.9s ease-in-out infinite;
+  position:relative}
+#title-belly::after{
+  content:'😜';font-size:32px;position:absolute;
+  top:50%;left:50%;transform:translate(-50%,-42%)}
+@keyframes bounce{0%,100%{transform:translateY(0) scaleX(1) scaleY(1)}
+  45%{transform:translateY(-14px) scaleX(0.94) scaleY(1.07)}
+  55%{transform:translateY(-16px) scaleX(0.93) scaleY(1.08)}
+  90%{transform:translateY(2px)   scaleX(1.06) scaleY(0.95)}}
+
+/* === Scores panel === */
+#recent-scores{
+  background:linear-gradient(135deg,#fff0fa 0%,#ffe8f5 60%,#ffd6ed 100%);
+  border:4px solid #ff5da2;
+  border-radius:16px;
+  min-width:min(320px,88vw);
+  max-width:420px;
+  padding:0 0 12px;
+  box-shadow:6px 6px 0 #b0145a, 0 12px 32px rgba(0,0,0,0.18);
+  overflow:hidden}
+
+.scores-header{
+  background:linear-gradient(90deg,#ff5da2,#ff9cdc,#ff5da2);
+  background-size:200% 100%;
+  animation:shimmer 2.5s linear infinite;
+  color:#fff;
+  font-size:clamp(8px,1.4vw,12px);
+  letter-spacing:3px;
+  padding:10px 16px;
+  text-shadow:2px 2px 0 #920038;
+  border-bottom:3px solid #b0145a}
+@keyframes shimmer{0%{background-position:0%}100%{background-position:200%}}
+
+#scores-list{list-style:none;padding:8px 12px 0}
+#scores-list li{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 10px;margin-bottom:6px;
+  border-radius:10px;
+  font-size:clamp(6px,1.1vw,10px);
+  border:2px solid transparent;
+  transition:transform 0.15s}
+#scores-list li:nth-child(1){
+  background:linear-gradient(90deg,#fff7cc,#ffe066);
+  border-color:#d4a800;color:#7a5500;
+  box-shadow:3px 3px 0 #b88b00}
+#scores-list li:nth-child(2){
+  background:linear-gradient(90deg,#f0f0f0,#e2e2e2);
+  border-color:#aaa;color:#444;
+  box-shadow:3px 3px 0 #888}
+#scores-list li:nth-child(3){
+  background:linear-gradient(90deg,#ffeadd,#ffcba8);
+  border-color:#c96a00;color:#7a3500;
+  box-shadow:3px 3px 0 #a04400}
+#scores-list li:nth-child(n+4){
+  background:rgba(255,93,162,0.10);
+  border-color:rgba(255,93,162,0.30);color:#6a0030}
+#scores-list li:hover{transform:scale(1.03)}
+
+.score-rank{font-size:1.6em;line-height:1;flex-shrink:0}
+.score-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.score-pts{
+  font-size:clamp(7px,1.2vw,11px);
+  background:rgba(0,0,0,0.08);
+  padding:3px 8px;border-radius:6px;flex-shrink:0}
+
+.scores-empty{
+  color:#c06090;font-size:9px;padding:10px 20px;
+  line-height:1.8;letter-spacing:1px}
+
+/* === Play button === */
+#start-btn{
+  font-family:'Press Start 2P',monospace;
+  font-size:clamp(12px,2.2vw,18px);
+  color:#fff;
+  background:linear-gradient(180deg,#ff79b4 0%,#e0156a 100%);
+  border:none;border-radius:12px;
+  padding:14px 36px;
+  cursor:pointer;
+  box-shadow:0 6px 0 #8b0840, 0 10px 20px rgba(0,0,0,0.22);
+  letter-spacing:2px;
+  transition:transform 0.1s, box-shadow 0.1s;
+  animation:pulse-btn 1.8s ease-in-out infinite}
+#start-btn:hover{transform:translateY(-3px);box-shadow:0 9px 0 #8b0840,0 14px 26px rgba(0,0,0,0.25)}
+#start-btn:active{transform:translateY(3px);box-shadow:0 2px 0 #8b0840}
+@keyframes pulse-btn{
+  0%,100%{box-shadow:0 6px 0 #8b0840,0 0 0 0 rgba(255,93,162,0)}
+  50%{box-shadow:0 6px 0 #8b0840,0 0 0 10px rgba(255,93,162,0.25)}}
+
+.difficulty-picker{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:rgba(255,255,255,0.86);
+  border:3px solid #ff5da2;
+  border-radius:12px;
+  padding:10px 12px;
+  box-shadow:0 5px 0 rgba(176,20,90,0.9), 0 10px 18px rgba(0,0,0,0.15);
+}
+
+.difficulty-picker label{
+  font-size:clamp(6px,1.2vw,9px);
+  color:#6a0030;
+}
+
+#bonkers-mode-select{
+  font-family:'Press Start 2P',monospace;
+  font-size:clamp(7px,1.4vw,10px);
+  color:#fff;
+  background:linear-gradient(180deg,#ff79b4 0%,#e0156a 100%);
+  border:2px solid #8b0840;
+  border-radius:8px;
+  padding:8px 10px;
+  cursor:pointer;
+  outline:none;
+  min-width:132px;
+}
+
+#bonkers-mode-select:hover{
+  filter:brightness(1.04);
+}
+
+#bonkers-mode-select:focus{
+  box-shadow:0 0 0 3px rgba(255,93,162,0.35);
+}
+
+#bonkers-mode-select option{
+  color:#222;
+  background:#fff;
+}
+
+.controls-hint{font-size:clamp(5px,0.9vw,8px);color:rgba(255,255,255,0.85);
+  letter-spacing:1px;line-height:2}
+
+/* === HUD buttons === */
+#sound-toggle{
+  position:fixed;left:16px;bottom:16px;
+  background:rgba(255,255,255,0.92);border:none;font-size:20px;
+  cursor:pointer;padding:6px 10px;border-radius:8px;z-index:50;
+  box-shadow:2px 2px 0 rgba(0,0,0,0.15)}
+#exit-button{
+  position:fixed;right:16px;top:16px;
+  background:linear-gradient(180deg,#ff5252,#c0000a);
+  color:#fff;border:none;
+  font-family:'Press Start 2P',monospace;
+  font-size:10px;font-weight:700;padding:9px 14px;
+  border-radius:8px;cursor:pointer;z-index:50;
+  display:none;
+  box-shadow:0 4px 0 #700,2px 2px 8px rgba(0,0,0,0.25)}
+
+/* === Level Complete & Accessory Picker === */
+#levelcomplete-box{
+  position:fixed;left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  z-index:70;
+  background:linear-gradient(135deg,#fff5ff 0%,#fff8e8 60%,#ffeef8 100%);
+  padding:22px 26px 20px;
+  border-radius:24px;
+  text-align:center;
+  min-width:min(340px,92vw);
+  max-width:min(500px,96vw);
+  max-height:92vh;
+  overflow-y:auto;
+  box-shadow:0 14px 48px rgba(255,93,162,0.32), 0 0 0 4px #ff5da2;
+  font-family:'Press Start 2P',system-ui,monospace}
+.lc-header{margin-bottom:14px}
+.lc-title{
+  color:#ff5da2;
+  font-size:clamp(13px,3.5vw,22px);
+  margin:0 0 8px;
+  animation:lc-bounce 0.55s ease-in-out infinite alternate}
+@keyframes lc-bounce{from{transform:scale(1) translateY(0)}to{transform:scale(1.04) translateY(-3px)}}
+.lc-subtitle{color:#666;font-size:clamp(7px,1.5vw,10px);margin:0;line-height:1.7}
+
+.accessory-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:9px;
+  margin-bottom:12px}
+.accessory-card{
+  background:#fff;
+  border:3px solid #ffb6d5;
+  border-radius:14px;
+  padding:10px 5px 8px;
+  cursor:pointer;
+  transition:transform 0.12s,border-color 0.15s,box-shadow 0.15s;
+  -webkit-user-select:none;
+  user-select:none;
+  outline:none}
+.accessory-card:not(.equipped):hover,
+.accessory-card:not(.equipped):focus{
+  transform:scale(1.09) translateY(-2px);
+  border-color:#ff5da2;
+  box-shadow:0 6px 22px rgba(255,93,162,0.30)}
+.accessory-card:not(.equipped):active{transform:scale(0.95)}
+.accessory-card.equipped{
+  background:#f0eaff;
+  border-color:#c0a8e0;
+  cursor:default;
+  opacity:0.72}
+.acc-emoji{font-size:clamp(22px,5vw,32px);margin-bottom:5px;display:block}
+.acc-name{
+  font-size:clamp(6px,1.4vw,9px);
+  color:#333;
+  font-weight:700;
+  margin-bottom:3px;
+  line-height:1.4}
+.acc-desc{font-size:clamp(5px,1.1vw,8px);color:#999;line-height:1.5}
+.acc-badge{
+  margin-top:5px;
+  font-size:clamp(5px,1vw,8px);
+  font-weight:700;
+  color:#7b00b8;
+  background:#ead8ff;
+  border-radius:8px;
+  padding:2px 6px;
+  display:inline-block}
+
+.lc-hint{color:#ff5da2;font-size:clamp(7px,1.5vw,10px);margin:2px 0 0;line-height:1.8}
+.lc-all-done{color:#ff8800;font-size:clamp(7px,1.5vw,10px);margin-bottom:10px;line-height:1.8}
+.lc-btn{
+  font-family:'Press Start 2P',monospace;
+  font-size:clamp(9px,1.8vw,13px);
+  padding:10px 26px;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  background:linear-gradient(180deg,#ff79b4,#e0156a);
+  color:#fff;
+  box-shadow:0 5px 0 #8b0840;
+  transition:transform 0.1s,box-shadow 0.1s}
+.lc-btn:hover{transform:translateY(-2px);box-shadow:0 7px 0 #8b0840}
+.lc-btn:active{transform:translateY(2px);box-shadow:0 2px 0 #8b0840}
+
+/* Level 2 end screen */
+.lc-score-line{
+  font-size:clamp(9px,2vw,14px);
+  color:#333;
+  margin:6px 0 12px;
+  line-height:1.7}
+.lc-score-line strong{color:#ff5da2}
+.lc-name-label{
+  display:block;
+  font-size:clamp(7px,1.4vw,10px);
+  color:#555;
+  margin-bottom:12px;
+  line-height:2}
+.lc-name-label input{
+  margin-top:4px;
+  padding:6px 10px;
+  border-radius:6px;
+  border:2px solid #ffb6d5;
+  font-size:15px;
+  width:100%;
+  box-sizing:border-box;
+  font-family:inherit}
+.lc-done-btns{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-top:4px}
+.lc-done-btns button{
+  font-family:'Press Start 2P',monospace;
+  font-size:clamp(7px,1.6vw,11px);
+  padding:9px 16px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  background:linear-gradient(180deg,#ff79b4,#e0156a);
+  color:#fff;
+  box-shadow:0 4px 0 #8b0840;
+  transition:transform 0.1s,box-shadow 0.1s}
+.lc-done-btns button:hover{transform:translateY(-2px);box-shadow:0 6px 0 #8b0840}
+.lc-done-btns button:active{transform:translateY(2px);box-shadow:0 2px 0 #8b0840}
+
+.portal-banner{
+  margin:8px auto 10px;
+  width:fit-content;
+  max-width:100%;
+  padding:7px 12px;
+  border-radius:10px;
+  font-size:clamp(7px,1.4vw,10px);
+  color:#fff;
+  background:linear-gradient(180deg,#7c34d8,#3d1280);
+  box-shadow:0 4px 0 #240b4d, 0 0 12px rgba(144,80,255,0.35);
+  letter-spacing:1px;
+}
+
+.minecraft-portal{
+  width:min(200px,55vw);
+  height:min(200px,55vw);
+  border-radius:50%;
+  margin:0 auto 12px;
+  position:relative;
+  overflow:hidden;
+  box-shadow:
+    0 0 0 3px rgba(200,120,255,0.7),
+    0 0 20px rgba(160,80,255,0.8),
+    0 0 50px rgba(100,30,200,0.5),
+    0 0 90px rgba(70,0,160,0.3);
+}
+
+.portal-core{
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  background:radial-gradient(circle,
+    #000005 0%,
+    #030012 22%,
+    #0e0038 42%,
+    #2a0072 60%,
+    #5a00b8 78%,
+    #9030dd 93%,
+    #c060ff 100%
+  );
+  animation:wormhole-breathe 2.5s ease-in-out infinite;
+}
+
+.portal-core::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  background:conic-gradient(from 0deg,
+    transparent 0%,
+    rgba(200,90,255,0.4) 18%,
+    transparent 35%,
+    rgba(150,60,230,0.4) 52%,
+    transparent 68%,
+    rgba(220,110,255,0.35) 82%,
+    transparent 100%
+  );
+  animation:wormhole-spin 3s linear infinite;
+}
+
+.portal-core::after{
+  content:'';
+  position:absolute;
+  inset:15%;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(0,0,8,0.95) 35%, transparent 100%);
+  animation:wormhole-spin 7s linear infinite reverse;
+}
+
+.portal-ring{
+  position:absolute;
+  border-radius:50%;
+  border:1.5px solid rgba(200,115,255,0.75);
+  box-shadow:0 0 6px rgba(180,80,255,0.6);
+  animation:wormhole-ring 2s ease-in infinite;
+  animation-delay:var(--rd,0s);
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+}
+
+.portal-hint{
+  color:#5b2a8f;
+  font-size:clamp(7px,1.4vw,10px);
+  line-height:1.8;
+  margin:0 0 10px;
+}
+
+@keyframes portal-shimmer{
+  0%{ filter:hue-rotate(0deg) brightness(1); transform:translateY(0); }
+  50%{ filter:hue-rotate(10deg) brightness(1.12); transform:translateY(-1px); }
+  100%{ filter:hue-rotate(0deg) brightness(1); transform:translateY(0); }
+}
+
+@keyframes portal-pixels{
+  0%{ transform:translateY(0); opacity:0.7; }
+  50%{ transform:translateY(-6px); opacity:1; }
+  100%{ transform:translateY(-12px); opacity:0.4; }
+}
