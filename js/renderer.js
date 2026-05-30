@@ -12,18 +12,66 @@
 // the sky colours!
 // ============================================================
 
+// ------------------------------------------------------------
+// VIEW — the logical "game size" and the current render quality.
+// ------------------------------------------------------------
+// w / h are the LOGICAL game pixels (the size the game thinks in,
+// matching the screen). `scale` is how many REAL pixels we draw per
+// logical pixel: 1 = full quality, lower = fewer pixels = faster on
+// weaker tablets (the browser stretches the smaller picture back up).
+// `effects` turns expensive glow (shadowBlur) on/off.
+//
+// Because every frame is drawn through ctx.setTransform(scale,...),
+// all the drawing code can keep using View.w / View.h and never has
+// to think about the real device resolution. game.js updates these.
+const View = { w: window.innerWidth, h: window.innerHeight, scale: 1, effects: true };
+
 const Renderer = (function () {
 
   const canvas = document.getElementById('game-canvas');
   const ctx    = canvas.getContext('2d');
+
+  // --- Gradient cache --------------------------------------------------
+  // Creating a canvas gradient every frame is slow and creates garbage.
+  // Full-screen background gradients only change when the window resizes,
+  // so we build each one once, remember it by name, and reuse it. The
+  // cache is cleared on resize (see invalidateCache, called from game.js).
+  const gradientCache = new Map();
+
+  // Empties the gradient cache so gradients are rebuilt at the new size.
+  function invalidateCache() {
+    gradientCache.clear();
+  }
+
+  /**
+   * Returns a cached vertical linear gradient, building it on first use.
+   * @param {string} key   - Unique name for this gradient (e.g. 'l1-sky').
+   * @param {number} y0    - Top y of the gradient.
+   * @param {number} y1    - Bottom y of the gradient.
+   * @param {Array<[number,string]>} stops - [position, colour] colour stops.
+   * @returns {CanvasGradient}
+   */
+  function cachedVGradient(key, y0, y1, stops) {
+    let g = gradientCache.get(key);
+    if (!g) {
+      g = ctx.createLinearGradient(0, y0, 0, y1);
+      for (const [pos, col] of stops) g.addColorStop(pos, col);
+      gradientCache.set(key, g);
+    }
+    return g;
+  }
 
   // Distance from the bottom of the canvas to the ground surface (pixels).
   // Used consistently across all level backgrounds.
   const GROUND_OFFSET = 80;
 
   // Clears the entire canvas ready for a new frame.
+  // Also sets the per-frame transform so every drawing command works in
+  // logical game pixels (View.w x View.h) regardless of the real render
+  // resolution. This is the one place the resolution scale is applied.
   function clear() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(View.scale, 0, 0, View.scale, 0, 0);
+    ctx.clearRect(0, 0, View.w, View.h);
   }
 
   /**
@@ -46,15 +94,15 @@ const Renderer = (function () {
   // Explorer Task 5: change the colour strings in addColorStop() to try
   // different sky colours! '#5bc8ff' is the current blue.
   function drawBackgroundLevel1(scroll) {
-    const W = canvas.width, H = canvas.height;
+    const W = View.w, H = View.h;
     const groundY = H - 80;
 
-    // --- SKY gradient ---
-    const sky = ctx.createLinearGradient(0, 0, 0, groundY);
-    sky.addColorStop(0,    '#5bc8ff');
-    sky.addColorStop(0.65, '#a8e4ff');
-    sky.addColorStop(1,    '#d4f0ff');
-    ctx.fillStyle = sky;
+    // --- SKY gradient (cached — only rebuilt on resize) ---
+    ctx.fillStyle = cachedVGradient('l1-sky', 0, groundY, [
+      [0,    '#5bc8ff'],
+      [0.65, '#a8e4ff'],
+      [1,    '#d4f0ff'],
+    ]);
     ctx.fillRect(0, 0, W, groundY);
 
     // --- CLOUDS (two parallax layers) ---
@@ -103,11 +151,11 @@ const Renderer = (function () {
     ctx.lineTo(W, groundY); ctx.closePath(); ctx.fill();
 
     // --- DIRT / SOIL (bottom band) ---
-    const dirtGrad = ctx.createLinearGradient(0, groundY + 18, 0, H);
-    dirtGrad.addColorStop(0,   '#a0622a');
-    dirtGrad.addColorStop(0.4, '#8b4f1e');
-    dirtGrad.addColorStop(1,   '#6b3812');
-    ctx.fillStyle = dirtGrad;
+    ctx.fillStyle = cachedVGradient('l1-dirt', groundY + 18, H, [
+      [0,   '#a0622a'],
+      [0.4, '#8b4f1e'],
+      [1,   '#6b3812'],
+    ]);
     ctx.fillRect(0, groundY + 18, W, H - groundY - 18);
 
     // dirt pebbles
@@ -166,16 +214,16 @@ const Renderer = (function () {
   // Dark purple/indigo cave with stalactites, bioluminescent crystals,
   // glowing mushrooms, and fossil details in the floor.
   function drawBackgroundLevel2(scroll) {
-    const W = canvas.width, H = canvas.height;
+    const W = View.w, H = View.h;
     const groundY = H - 80;
 
-    // --- Deep cave rock gradient (background fill) ---
-    const caveBg = ctx.createLinearGradient(0, 0, 0, H);
-    caveBg.addColorStop(0,    '#0a0618');
-    caveBg.addColorStop(0.35, '#12082a');
-    caveBg.addColorStop(0.75, '#1a0f38');
-    caveBg.addColorStop(1,    '#100820');
-    ctx.fillStyle = caveBg;
+    // --- Deep cave rock gradient (background fill, cached) ---
+    ctx.fillStyle = cachedVGradient('l2-cave', 0, H, [
+      [0,    '#0a0618'],
+      [0.35, '#12082a'],
+      [0.75, '#1a0f38'],
+      [1,    '#100820'],
+    ]);
     ctx.fillRect(0, 0, W, H);
 
     // --- Far cave wall texture (barely visible, slow parallax) ---
@@ -267,12 +315,12 @@ const Renderer = (function () {
       ctx.beginPath(); ctx.arc(sx, baseY + len, 2.5, 0, Math.PI * 2); ctx.fill();
     }
 
-    // --- CAVE FLOOR (dark stone / rubble) ---
-    const floorGrad = ctx.createLinearGradient(0, groundY + 16, 0, H);
-    floorGrad.addColorStop(0,   '#1c0e40');
-    floorGrad.addColorStop(0.4, '#160c35');
-    floorGrad.addColorStop(1,   '#0e081e');
-    ctx.fillStyle = floorGrad;
+    // --- CAVE FLOOR (dark stone / rubble, cached) ---
+    ctx.fillStyle = cachedVGradient('l2-floor', groundY + 16, H, [
+      [0,   '#1c0e40'],
+      [0.4, '#160c35'],
+      [1,   '#0e081e'],
+    ]);
     ctx.fillRect(0, groundY + 16, W, H - groundY - 16);
 
     // Rocky floor top edge (dark stone stripe)
@@ -361,16 +409,16 @@ const Renderer = (function () {
   // Bright sky-blue gradient with layered clouds, rainbow arc, and
   // a floating sun. Parallax layers move at different speeds.
   function drawBackgroundLevel3(scroll) {
-    const W = canvas.width, H = canvas.height;
+    const W = View.w, H = View.h;
     const groundY = H - 80;
 
-    // --- Deep twilight-blue sky gradient ---
-    const sky = ctx.createLinearGradient(0, 0, 0, groundY);
-    sky.addColorStop(0,    '#071850');
-    sky.addColorStop(0.30, '#0e2880');
-    sky.addColorStop(0.65, '#1840a8');
-    sky.addColorStop(1,    '#2260c0');
-    ctx.fillStyle = sky;
+    // --- Deep twilight-blue sky gradient (cached) ---
+    ctx.fillStyle = cachedVGradient('l3-sky', 0, groundY, [
+      [0,    '#071850'],
+      [0.30, '#0e2880'],
+      [0.65, '#1840a8'],
+      [1,    '#2260c0'],
+    ]);
     ctx.fillRect(0, 0, W, groundY);
 
     // --- Faint stars in upper sky ---
@@ -465,7 +513,7 @@ const Renderer = (function () {
   // Deep black / indigo space with animated star field, nebula clouds,
   // a planet, and a distant moon.
   function drawBackgroundLevel4(scroll) {
-    const W = canvas.width, H = canvas.height;
+    const W = View.w, H = View.h;
 
     // --- Black space fill ---
     ctx.fillStyle = '#000008'; ctx.fillRect(0, 0, W, H);
@@ -582,19 +630,19 @@ const Renderer = (function () {
   // Warm pink/red fashion-boutique interior with shelves, price tags,
   // fabric textures, and sparkle details.
   function drawBackgroundLevel5(scroll) {
-    const W = canvas.width, H = canvas.height;
+    const W = View.w, H = View.h;
     const groundY = H - 80;
     const now = performance.now() / 1000;
     ctx.save();
 
-    // --- Silk base gradient — deep rose/blush, lit from the bag opening above ---
-    const silkBase = ctx.createLinearGradient(0, 0, 0, H);
-    silkBase.addColorStop(0,    '#2e0520'); // darkest near zip
-    silkBase.addColorStop(0.10, '#6a0e3a'); // rich rose-shadow
-    silkBase.addColorStop(0.42, '#c03068'); // main blush-rose mid-body
-    silkBase.addColorStop(0.70, '#9a2050'); // lower body shadow
-    silkBase.addColorStop(1,    '#3e0828'); // floor depth
-    ctx.fillStyle = silkBase;
+    // --- Silk base gradient — deep rose/blush, lit from the bag opening above (cached) ---
+    ctx.fillStyle = cachedVGradient('l5-silk', 0, H, [
+      [0,    '#2e0520'], // darkest near zip
+      [0.10, '#6a0e3a'], // rich rose-shadow
+      [0.42, '#c03068'], // main blush-rose mid-body
+      [0.70, '#9a2050'], // lower body shadow
+      [1,    '#3e0828'], // floor depth
+    ]);
     ctx.fillRect(0, 0, W, H);
 
     // --- Soft top-light from bag opening ---
@@ -777,16 +825,16 @@ const Renderer = (function () {
   // Dark otherworldly void with glowing portal rings, swirling energy,
   // and spooky floating debris. The scariest (but most exciting) level!
   function drawBackgroundLevel6(scroll) {
-    const W = canvas.width, H = canvas.height;
+    const W = View.w, H = View.h;
     const groundY = H - 80;
     const now = performance.now() / 1000;
 
-    // === Deep void sky ===
-    const sky = ctx.createLinearGradient(0, 0, 0, groundY);
-    sky.addColorStop(0, '#03000e');
-    sky.addColorStop(0.45, '#0c0022');
-    sky.addColorStop(1, '#180040');
-    ctx.fillStyle = sky;
+    // === Deep void sky (cached) ===
+    ctx.fillStyle = cachedVGradient('l6-sky', 0, groundY, [
+      [0,    '#03000e'],
+      [0.45, '#0c0022'],
+      [1,    '#180040'],
+    ]);
     ctx.fillRect(0, 0, W, groundY);
 
     // === WORMHOLE ===
@@ -816,7 +864,7 @@ const Renderer = (function () {
       ctx.save();
       ctx.strokeStyle = `hsla(${hue},100%,${lum}%,${fade*(0.2+t*0.65)})`;
       ctx.lineWidth   = 1 + t * 2.8;
-      ctx.shadowBlur  = 5 + t * 22;
+      ctx.shadowBlur  = View.effects ? 5 + t * 22 : 0;
       ctx.shadowColor = `hsla(${hue},100%,78%,0.9)`;
       ctx.beginPath(); ctx.arc(wx, wy, r, 0, Math.PI*2); ctx.stroke();
       ctx.restore();
@@ -881,15 +929,15 @@ const Renderer = (function () {
     }
     ctx.lineTo(W, groundY+30); ctx.lineTo(0, groundY+30); ctx.closePath(); ctx.fill();
 
-    const floor = ctx.createLinearGradient(0, groundY, 0, H);
-    floor.addColorStop(0,   '#3a1a58');
-    floor.addColorStop(0.4, '#241240');
-    floor.addColorStop(1,   '#110820');
-    ctx.fillStyle = floor;
+    ctx.fillStyle = cachedVGradient('l6-floor', groundY, H, [
+      [0,   '#3a1a58'],
+      [0.4, '#241240'],
+      [1,   '#110820'],
+    ]);
     ctx.fillRect(0, groundY, W, H - groundY);
 
     // Glowing cracks on floor — portal energy leaking through
-    ctx.shadowBlur  = 10;
+    ctx.shadowBlur  = View.effects ? 10 : 0;
     ctx.shadowColor = 'rgba(175,100,255,0.9)';
     ctx.strokeStyle = 'rgba(205,130,255,0.72)';
     ctx.lineWidth   = 1.5;
@@ -1274,19 +1322,19 @@ const Renderer = (function () {
   function drawBonkersFlash(t) {
     // white strobe
     ctx.fillStyle = `rgba(255,255,200,${Math.abs(Math.sin(t * 10)) * 0.65})`;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, View.w, View.h);
     // lightning bolts
     ctx.save();
     for(let b = 0; b < 3; b++){
       if(Math.random() > 0.55) continue;
       ctx.strokeStyle = b === 0 ? '#ffffa0' : 'rgba(255,255,160,0.85)';
       ctx.lineWidth = 4 - b * 1.2;
-      ctx.shadowBlur = 24; ctx.shadowColor = '#ffff50';
+      ctx.shadowBlur = View.effects ? 24 : 0; ctx.shadowColor = '#ffff50';
       ctx.beginPath();
-      let lx = 80 + b * (canvas.width * 0.35) + (Math.random()-0.5)*120, ly = 0;
+      let lx = 80 + b * (View.w * 0.35) + (Math.random()-0.5)*120, ly = 0;
       ctx.moveTo(lx, ly);
-      while(ly < canvas.height){
-        lx = Math.max(10, Math.min(canvas.width-10, lx + (Math.random()-0.5)*90));
+      while(ly < View.h){
+        lx = Math.max(10, Math.min(View.w-10, lx + (Math.random()-0.5)*90));
         ly += 18 + Math.random()*38;
         ctx.lineTo(lx, ly);
       }
@@ -1297,16 +1345,16 @@ const Renderer = (function () {
     const cols = ['#ffe200','#ff5da2','#00ffee','#ff6a00','#ffffff'];
     const col  = cols[Math.floor(t * 7) % cols.length];
     const alpha = 0.35 + 0.65 * Math.abs(Math.sin(t * 6));
-    const fs    = Math.max(26, Math.min(68, canvas.width * 0.08));
+    const fs    = Math.max(26, Math.min(68, View.w * 0.08));
     ctx.save();
     ctx.globalAlpha = alpha;
     ctx.font = `bold ${fs}px 'Press Start 2P',monospace`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.shadowBlur = 40; ctx.shadowColor = col;
+    ctx.shadowBlur = View.effects ? 40 : 0; ctx.shadowColor = col;
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
-    ctx.fillText('BONKERS MODE!', canvas.width/2 + 4, canvas.height/2 + 6);
+    ctx.fillText('BONKERS MODE!', View.w/2 + 4, View.h/2 + 6);
     ctx.fillStyle = col;
-    ctx.fillText('BONKERS MODE!', canvas.width/2, canvas.height/2);
+    ctx.fillText('BONKERS MODE!', View.w/2, View.h/2);
     ctx.globalAlpha = 1; ctx.shadowBlur = 0;
     ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
     ctx.restore();
@@ -1315,7 +1363,7 @@ const Renderer = (function () {
   // Draws the screen-shake vignette overlay during the Bonkers shake phase.
   function drawBonkersShake(t) {
     ctx.fillStyle = 'rgba(20,0,50,0.42)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, View.w, View.h);
     drawBonkersFlash(t);
   }
 
@@ -1327,8 +1375,8 @@ const Renderer = (function () {
     ctx.font = `bold 13px 'Press Start 2P',monospace`;
     ctx.textAlign = 'center';
     ctx.fillStyle = '#ffe200';
-    ctx.shadowBlur = 14; ctx.shadowColor = '#ff8800';
-    ctx.fillText('\u26A1 BONKERS \u26A1', canvas.width / 2, 54);
+    ctx.shadowBlur = View.effects ? 14 : 0; ctx.shadowColor = '#ff8800';
+    ctx.fillText('\u26A1 BONKERS \u26A1', View.w / 2, 54);
     ctx.shadowBlur = 0; ctx.globalAlpha = 1; ctx.textAlign = 'left';
     ctx.restore();
   }
@@ -1340,7 +1388,7 @@ const Renderer = (function () {
    * @returns {void}
    */
   function drawLevelComplete(timer, level) {
-    const W = canvas.width, H = canvas.height;
+    const W = View.w, H = View.h;
     // Soft golden wash
     ctx.fillStyle = `rgba(255,240,100,${0.10 + 0.05 * Math.sin(timer * 10)})`;
     ctx.fillRect(0, 0, W, H);
@@ -1371,7 +1419,7 @@ const Renderer = (function () {
     ctx.save();
     ctx.font = `bold ${fs}px 'Press Start 2P',monospace`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.shadowBlur = 38; ctx.shadowColor = col;
+    ctx.shadowBlur = View.effects ? 38 : 0; ctx.shadowColor = col;
     ctx.fillStyle = 'rgba(0,0,0,0.55)';
     ctx.fillText(completeTxt, W/2 + 4, H/2 - fs - bob + 5);
     ctx.fillStyle = col;
@@ -2951,6 +2999,7 @@ const Renderer = (function () {
   // Public API — all the drawing functions game.js needs.
   return {
     clear,
+    invalidateCache,
     drawBackground,
     drawBelly,
     drawObstacle,
