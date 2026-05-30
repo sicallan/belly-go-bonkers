@@ -286,6 +286,41 @@ const Game = (function () {
   const exitBtn = () => document.getElementById('exit-button');
 
   /**
+   * Binds a "press" handler that works consistently across mouse, touch,
+   * and keyboard activation (Enter/Space).
+   * @param {HTMLElement|null} el - Element to bind.
+   * @param {(e?: Event) => void} handler - Action to run on press.
+   * @returns {void}
+   */
+  function bindPress(el, handler) {
+    if (!el || typeof handler !== 'function') return;
+    let lastTouchAt = 0;
+
+    function onPress(e) {
+      const now = Date.now();
+
+      // iOS may emit a delayed click after touchend; ignore duplicates.
+      if (e && e.type === 'click' && (now - lastTouchAt) < 500) return;
+
+      if (e && e.type === 'touchend') {
+        lastTouchAt = now;
+        e.preventDefault();
+      }
+
+      handler(e);
+    }
+
+    el.addEventListener('click', onPress);
+    el.addEventListener('touchend', onPress, { passive: false });
+    el.addEventListener('keydown', e => {
+      if (e.code === 'Enter' || e.code === 'Space') {
+        e.preventDefault();
+        handler(e);
+      }
+    });
+  }
+
+  /**
    * Shows or hides the title-screen HTML overlay and the in-game exit button.
    * @param {boolean} visible - true to show the title screen, false to hide it.
    * @returns {void}
@@ -584,7 +619,7 @@ const Game = (function () {
     showRecent();
     setTitleVisible(true);
     Input.onTap(()=>{ if(state==='title') startGame(); });
-    document.getElementById('start-btn').addEventListener('click', ()=>{ if(state==='title') startGame(); });
+    bindPress(document.getElementById('start-btn'), ()=>{ if(state==='title') startGame(); });
     window.addEventListener('keydown', e=>{
       // accumulate secret code letters on title screen
       if(state==='title' && e.key && e.key.length===1){
@@ -607,9 +642,9 @@ const Game = (function () {
     });
     const soundToggle = document.getElementById('sound-toggle');
     function updateSoundButton(){ soundToggle.textContent = Assets.isMuted() ? '🔇' : '🔊'; soundToggle.setAttribute('aria-pressed', Assets.isMuted() ? 'true' : 'false'); }
-    soundToggle.addEventListener('click', ()=>{ Assets.setMuted(!Assets.isMuted()); updateSoundButton(); });
+    bindPress(soundToggle, ()=>{ Assets.setMuted(!Assets.isMuted()); updateSoundButton(); });
     updateSoundButton();
-    exitBtn().addEventListener('click', ()=>{ const box=document.getElementById('gameover-box'); if(box) box.remove(); state='title'; showRecent(); setTitleVisible(true); });
+    bindPress(exitBtn(), ()=>{ const box=document.getElementById('gameover-box'); if(box) box.remove(); state='title'; showRecent(); setTitleVisible(true); });
     window.addEventListener('resize', resizeCanvas);
     detectInitialQuality();
     resizeCanvas();
