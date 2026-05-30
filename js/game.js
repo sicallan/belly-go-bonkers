@@ -44,6 +44,7 @@ const Game = (function () {
   let scroll     = 0;        // total world distance scrolled (pixels)
   let speed      = CONFIG.INITIAL_SPEED; // current world scroll speed
   let last       = performance.now();    // timestamp of previous frame (ms)
+  let swipeWasDown = false;               // was the touch swipe-jump active last frame?
 
   // Active game objects
   let obstacles    = [];
@@ -243,7 +244,7 @@ const Game = (function () {
     speed        = CONFIG.INITIAL_SPEED; // Explorer Task 4: CONFIG.INITIAL_SPEED is defined at the top!
 
     // Levels 3+ are sky/space — no floating planks.
-    nextPlankScroll       = currentLevel >= 3 ? Infinity : canvas.width * CONFIG.PLANK_SPAWN_FRACTION;
+    nextPlankScroll       = currentLevel >= 3 ? Infinity : View.w * CONFIG.PLANK_SPAWN_FRACTION;
     nextObstacleScroll    = CONFIG.OBSTACLE_SPAWN_MIN_GAP;
     nextCollectibleScroll = CONFIG.COLLECTIBLE_SPAWN_MIN_GAP / 2;
 
@@ -269,11 +270,11 @@ const Game = (function () {
     else                         Assets.startMusic();
 
     // Position Belly at the correct height for this level.
-    const groundTopY = canvas.height - CONFIG.GROUND_OFFSET;
+    const groundTopY = View.h - CONFIG.GROUND_OFFSET;
     if (currentLevel === 4) {
       // Space level: Belly floats freely with no gravity snap.
-      belly.y      = canvas.height / 2 - belly.height / 2;
-      belly.groundY = canvas.height + 1000; // effectively disable ground snap
+      belly.y      = View.h / 2 - belly.height / 2;
+      belly.groundY = View.h + 1000; // effectively disable ground snap
     } else {
       belly.y      = groundTopY - belly.height;
       belly.groundY = groundTopY - belly.height;
@@ -309,18 +310,67 @@ const Game = (function () {
   }
   
   // Returns the Y coordinate of the top surface of the ground.
-  function groundTop() { return canvas.height - CONFIG.GROUND_OFFSET; }
+  function groundTop() { return View.h - CONFIG.GROUND_OFFSET; }
+
+  // ---- Adaptive performance --------------------------------------------
+  // Lower-powered tablets struggle to redraw the rich backgrounds at full
+  // resolution 60 times a second. We watch how long each frame takes and, if
+  // the game runs slow, drop the render resolution a step (and switch off the
+  // expensive glow effects) until it runs smoothly again. Fast devices stay
+  // crisp; slow devices stay playable.
+  const QUALITY_STEPS = [1, 0.8, 0.65, 0.5]; // render-scale levels: best → fastest
+  let qualityStep = 0;
+  let slowFrames  = 0;
+
+  // Chooses a starting quality from the device, with a ?quality= URL override
+  // ('low' | 'medium' | 'high') handy for testing on a specific tablet.
+  function detectInitialQuality() {
+    const forced = new URLSearchParams(location.search).get('quality');
+    if (forced === 'low')         { qualityStep = 3; View.effects = false; }
+    else if (forced === 'medium') { qualityStep = 1; View.effects = false; }
+    else if (forced === 'high')   { qualityStep = 0; View.effects = true;  }
+    else {
+      // A touch device with few CPU cores is likely a modest tablet — start
+      // one step down with glow off so it feels smooth from the first frame.
+      const cores  = navigator.hardwareConcurrency || 8;
+      const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+      if (coarse && cores <= 4) { qualityStep = 1; View.effects = false; }
+    }
+    View.scale = QUALITY_STEPS[qualityStep];
+  }
+
+  // Called once per playing frame. After a sustained run of slow frames it
+  // drops one quality step. It only steps down, so quality never flickers.
+  function adaptQuality(dt) {
+    if (dt > 0.026) slowFrames++;            // slower than ~38fps = a slow frame
+    else if (slowFrames > 0) slowFrames--;   // recover slowly; ignore brief hiccups
+    if (slowFrames > 60 && qualityStep < QUALITY_STEPS.length - 1) {
+      qualityStep++;
+      View.scale   = QUALITY_STEPS[qualityStep];
+      View.effects = false;                  // glow is the first thing to drop
+      slowFrames   = 0;
+      resizeCanvas();
+    }
+  }
 
   // Resizes the canvas to fill the window and repositions all entities accordingly.
+  // The game thinks in "logical" pixels (View.w x View.h = the window size),
+  // but the real drawing buffer is scaled by View.scale so weaker devices can
+  // render fewer pixels for speed. The browser stretches the buffer to fill
+  // the screen via the canvas CSS width/height (100%).
   function resizeCanvas() {
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
-    const groundTop = canvas.height - CONFIG.GROUND_OFFSET;
+    View.w = window.innerWidth;
+    View.h = window.innerHeight;
+    canvas.width  = Math.max(1, Math.round(View.w * View.scale));
+    canvas.height = Math.max(1, Math.round(View.h * View.scale));
+    // Cached background gradients depend on the height — rebuild them.
+    Renderer.invalidateCache();
+    const groundTop = View.h - CONFIG.GROUND_OFFSET;
     // if belly exists, reposition for current level
     if(belly){
       belly.x = 120;
       if(currentLevel === 4){
-        belly.groundY = canvas.height + 1000;
+        belly.groundY = View.h + 1000;
         // y stays where it was — belly floats in space
       } else {
         belly.y = groundTop - belly.height;
@@ -335,7 +385,7 @@ const Game = (function () {
   // Spawns a randomly-chosen obstacle for the current level just off the right edge.
   // Builder Task 5: add a new kind name to one of the kindsByLevel arrays below!
   function spawnObstacle() {
-    const x = canvas.width + scroll + 80 + Math.random()*200;
+    const x = View.w + scroll + 80 + Math.random()*200;
     const kindsByLevel = {
       1: ['toy-small','toy-large','toy-ball','rattle','bicycle','blocks','toy-car','dinosaur'],
       2: ['ant','worm','roman-pot','boulder','clock'],
@@ -353,7 +403,7 @@ const Game = (function () {
       o.y = groundTop() - o.h - lift;
     } else if(currentLevel === 4){
       // space obstacles float freely with sinusoidal drift
-      const safeY = 80 + Math.random() * (canvas.height - 200);
+      const safeY = 80 + Math.random() * (View.h - 200);
       o.y = safeY;
       o.baseY = safeY;
       o.floatTimer = Math.random() * 6.28;
@@ -383,11 +433,11 @@ const Game = (function () {
   // Spawns a randomly-chosen collectible treat just off the right edge.
   // Builder Task 1: add your new kind name to the 'kinds' array below!
   function spawnCollectible() {
-    const x = canvas.width + scroll + 100 + Math.random()*300;
+    const x = View.w + scroll + 100 + Math.random()*300;
     const kinds = ['donut','pizza','icecream','lollipop','hotdog','cupcake','candybar','milkshake'];
     const kind = kinds[Math.floor(Math.random()*kinds.length)];
     const cy = currentLevel === 4
-      ? 80 + Math.random() * (canvas.height - 200)
+      ? 80 + Math.random() * (View.h - 200)
       : groundTop() - 60;
     collectibles.push(new exported.Collectible(x, cy, kind));
   }
@@ -395,7 +445,7 @@ const Game = (function () {
   // Spawns a floating plank platform with two collectibles on top.
   function spawnPlank() {
     const w = 150 + Math.random() * 100;
-    const x = canvas.width + scroll + 80;
+    const x = View.w + scroll + 80;
     const y = groundTop() - 90 - Math.random() * 40;
     const p = new exported.Plank(x, y, w);
     planks.push(p);
@@ -409,7 +459,7 @@ const Game = (function () {
 
   // Spawns a special candy cane collectible that progresses Bonkers Mode.
   function spawnCandyCane() {
-    const x = canvas.width + scroll + 80;
+    const x = View.w + scroll + 80;
     collectibles.push(new exported.Collectible(x, groundTop() - 68, 'candy-cane'));
   }
 
@@ -561,6 +611,7 @@ const Game = (function () {
     updateSoundButton();
     exitBtn().addEventListener('click', ()=>{ const box=document.getElementById('gameover-box'); if(box) box.remove(); state='title'; showRecent(); setTitleVisible(true); });
     window.addEventListener('resize', resizeCanvas);
+    detectInitialQuality();
     resizeCanvas();
     requestAnimationFrame(loop);
   }
@@ -580,7 +631,7 @@ const Game = (function () {
     const dt = Math.min(50, t - last) / 1000;
     last = t;
 
-    if (state === 'playing')       update(dt);
+    if (state === 'playing')     { update(dt); adaptQuality(dt); }
     if (state === 'levelcomplete') levelCompleteTimer += dt;
 
     render();
@@ -604,12 +655,12 @@ const Game = (function () {
     }
     if(bonkersPhase === 'shake'){
       bonkersTimer += dt;
-      shakeX = 60 + Math.random() * (canvas.width - 180);
-      shakeY = 40 + Math.random() * (canvas.height - 200);
+      shakeX = 60 + Math.random() * (View.w - 180);
+      shakeY = 40 + Math.random() * (View.h - 200);
       if(bonkersTimer >= bonkersCfg.shakeDuration){
         bonkersPhase = 'run'; bonkersTimer = 0;
         belly.x = 120;
-        belly.y = currentLevel === 4 ? canvas.height / 2 - belly.height / 2 : groundTop() - belly.height;
+        belly.y = currentLevel === 4 ? View.h / 2 - belly.height / 2 : groundTop() - belly.height;
         belly.vy = 0;
         belly.onGround = currentLevel !== 4;
         savedSpeed = speed; speed = speed * bonkersCfg.speedMultiplier;
@@ -634,7 +685,8 @@ const Game = (function () {
     if(currentLevel === 4){
       // === LEVEL 4: JETPACK PHYSICS ===
       belly.update(dt, 0.22, []);
-      const thrustHeld = Input.isDown('ArrowUp') || Input.isDown('Space');
+      // Thrust on keyboard (Up/Space) OR by holding a finger on the screen.
+      const thrustHeld = Input.isDown('ArrowUp') || Input.isDown('Space') || Input.isPointerDown();
       if(thrustHeld) belly.vy -= 0.38;
       // clamp vertical velocity
       belly.vy = Math.max(-10, Math.min(8, belly.vy));
@@ -662,16 +714,26 @@ const Game = (function () {
       }
     } else {
       belly.update(dt, 0.6, planks);
-      // apply jump boost while key held
-      const jumpHeld = Input.isDown('ArrowUp') || Input.isDown('Space');
+      // Apply jump boost while the jump control is held. A touch swipe-up holds
+      // the synthetic 'SwipeUp' key (longer for bigger swipes), so it boosts the
+      // jump exactly like holding the keyboard jump button — this is what makes
+      // a tablet swipe jump as high as a key press.
+      const jumpHeld = Input.isDown('ArrowUp') || Input.isDown('Space') || Input.isDown('SwipeUp');
       if (jumpHeld) belly.boost(dt, CONFIG.MAX_BOOST_DURATION);
       else          belly.stopBoost();
     }
     // advance belly animation timer
     if(belly.animTime === undefined) belly.animTime = 0;
     belly.animTime += dt;
-    // touch swipe jump
-    if(Input.isDown('SwipeUp')){ belly.jump(); Assets.playJump(); }
+    // Touch swipe jump — fire only on the moment the swipe starts (rising edge)
+    // so the jump (and its sound) trigger once, while the held key above keeps
+    // boosting the jump higher.
+    const swipeDown = Input.isDown('SwipeUp');
+    if (swipeDown && !swipeWasDown && currentLevel !== 4) {
+      belly.jump();
+      Assets.playJump();
+    }
+    swipeWasDown = swipeDown;
     // Spawn obstacles, collectibles, planks and candy canes at regular intervals.
     if (scroll >= nextObstacleScroll) {
       spawnObstacle();
@@ -683,7 +745,7 @@ const Game = (function () {
     }
     if (scroll >= nextPlankScroll) {
       spawnPlank();
-      nextPlankScroll = scroll + canvas.width * (CONFIG.PLANK_SPAWN_MIN_SCREENS + Math.random() * CONFIG.PLANK_SPAWN_SCREEN_RANGE);
+      nextPlankScroll = scroll + View.w * (CONFIG.PLANK_SPAWN_MIN_SCREENS + Math.random() * CONFIG.PLANK_SPAWN_SCREEN_RANGE);
     }
     // candy cane spawn (rare — every 700–1100px)
     if(scroll >= nextCandyCaneScroll){
@@ -766,7 +828,7 @@ const Game = (function () {
     // On the title screen, dim the canvas so the HTML overlay reads clearly.
     if (state === 'title') {
       Renderer.ctx.fillStyle = 'rgba(255,255,255,0.6)';
-      Renderer.ctx.fillRect(0, 0, canvas.width, canvas.height);
+      Renderer.ctx.fillRect(0, 0, View.w, View.h);
     }
 
     // Draw Belly — teleported to a random shake position during the shake phase.
