@@ -295,6 +295,14 @@ const Game = (function () {
   function bindPress(el, handler) {
     if (!el || typeof handler !== 'function') return;
     let lastTouchAt = 0;
+    let lastFireAt  = 0;
+
+    function fireOnce(e) {
+      const now = Date.now();
+      if ((now - lastFireAt) < 180) return;
+      lastFireAt = now;
+      handler(e);
+    }
 
     function onPress(e) {
       const now = Date.now();
@@ -307,15 +315,22 @@ const Game = (function () {
         e.preventDefault();
       }
 
-      handler(e);
+      fireOnce(e);
     }
 
     el.addEventListener('click', onPress);
+    el.addEventListener('pointerup', onPress);
     el.addEventListener('touchend', onPress, { passive: false });
+    el.addEventListener('touchstart', e => {
+      // iPad Safari may drop click/touchend after tiny finger movement.
+      lastTouchAt = Date.now();
+      e.preventDefault();
+      fireOnce(e);
+    }, { passive: false });
     el.addEventListener('keydown', e => {
       if (e.code === 'Enter' || e.code === 'Space') {
         e.preventDefault();
-        handler(e);
+        fireOnce(e);
       }
     });
   }
@@ -619,7 +634,26 @@ const Game = (function () {
     showRecent();
     setTitleVisible(true);
     Input.onTap(()=>{ if(state==='title') startGame(); });
-    bindPress(document.getElementById('start-btn'), ()=>{ if(state==='title') startGame(); });
+    function requestStart() {
+      if(state==='title') startGame();
+    }
+    const startBtn = document.getElementById('start-btn');
+    bindPress(startBtn, requestStart);
+    // Extra safety for Safari: some builds are more reliable with direct onclick.
+    if (startBtn) startBtn.onclick = requestStart;
+
+    // Delegated fallback: tapping title overlay starts if user didn't hit
+    // controls that should stay interactive.
+    const uiEl = ui();
+    if (uiEl) {
+      bindPress(uiEl, e => {
+        if (state !== 'title') return;
+        const target = e && e.target;
+        if (!target || !(target instanceof Element)) return;
+        if (target.closest('#start-btn, #bonkers-mode-select, .academy-link')) return;
+        requestStart();
+      });
+    }
     window.addEventListener('keydown', e=>{
       // accumulate secret code letters on title screen
       if(state==='title' && e.key && e.key.length===1){
